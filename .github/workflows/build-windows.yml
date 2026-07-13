@@ -1,0 +1,76 @@
+name: Build Windows
+
+# Личная сборка форка (AGPLv3): собирает Windows-установщик в облаке GitHub.
+# Запуск вручную: вкладка Actions -> "Build Windows" -> Run workflow.
+# Готовый .exe появится внизу прогона в разделе Artifacts.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PROFILE: release
+  TARGET: x86_64-pc-windows-msvc
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: "pnpm"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm exec next build
+
+      - name: Build sidecar binary
+        working-directory: ./src-tauri
+        run: cargo build --bin donut-proxy --release --target x86_64-pc-windows-msvc
+
+      - name: Copy sidecar into place
+        shell: bash
+        run: |
+          mkdir -p src-tauri/binaries
+          cp src-tauri/target/x86_64-pc-windows-msvc/release/donut-proxy.exe \
+             src-tauri/binaries/donut-proxy-x86_64-pc-windows-msvc.exe
+
+      - name: Build Tauri app (installer)
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: ./src-tauri
+          args: "--target x86_64-pc-windows-msvc --verbose"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: donut-windows-x64
+          path: |
+            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+            src-tauri/target/x86_64-pc-windows-msvc/release/donutbrowser.exe
+          if-no-files-found: error

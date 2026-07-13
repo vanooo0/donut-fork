@@ -778,12 +778,10 @@ impl CloudAuthManager {
   }
 
   /// Launch/drive profiles programmatically (local API + MCP automation).
+  /// Personal AGPLv3 build: automation is unlocked locally regardless of the
+  /// cloud entitlement. See fork README.
   pub async fn can_use_browser_automation(&self) -> bool {
-    self
-      .entitlements()
-      .await
-      .map(|e| e.browser_automation)
-      .unwrap_or(false)
+    true
   }
 
   /// Edit fingerprints / use a non-native OS fingerprint.

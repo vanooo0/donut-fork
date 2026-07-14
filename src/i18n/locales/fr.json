@@ -419,7 +419,8 @@
       "newVpn": "Nouveau VPN",
       "protocolCol": "Protocole",
       "hostPort": "Hôte : port",
-      "title": "Proxys et VPN"
+      "title": "Proxys et VPN",
+      "searchPlaceholder": "Rechercher par nom, hôte, port ou pays..."
     },
     "add": "Ajouter un proxy",
     "edit": "Modifier le proxy",
@@ -446,7 +447,8 @@
       "hostPortRequired": "Hôte et port sont requis",
       "ssCipherRequired": "Le chiffrement et le mot de passe sont requis pour Shadowsocks",
       "selectType": "Sélectionnez le type de proxy",
-      "saveFailed": "Échec de la sauvegarde du proxy : {{error}}"
+      "saveFailed": "Échec de la sauvegarde du proxy : {{error}}",
+      "nameOptionalPlaceholder": "Optionnel — par défaut hôte:port"
     },
     "types": {
       "http": "HTTP",

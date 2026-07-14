@@ -419,7 +419,8 @@
       "newVpn": "VPN mới",
       "protocolCol": "Giao thức",
       "hostPort": "Máy chủ : cổng",
-      "title": "Proxy & VPN"
+      "title": "Proxy & VPN",
+      "searchPlaceholder": "Tìm theo tên, host, cổng hoặc quốc gia..."
     },
     "add": "Thêm Proxy",
     "edit": "Chỉnh sửa Proxy",
@@ -446,7 +447,8 @@
       "hostPortRequired": "Host và cổng là bắt buộc",
       "ssCipherRequired": "Cipher và mật khẩu là bắt buộc cho Shadowsocks",
       "selectType": "Chọn loại proxy",
-      "saveFailed": "Lưu proxy thất bại: {{error}}"
+      "saveFailed": "Lưu proxy thất bại: {{error}}",
+      "nameOptionalPlaceholder": "Tùy chọn — mặc định là host:cổng"
     },
     "types": {
       "http": "HTTP",

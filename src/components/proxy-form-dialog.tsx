@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { translateBackendError } from "@/lib/backend-errors";
+import { parseProxyString } from "@/lib/proxy-utils";
 import type { StoredProxy } from "@/types";
 import { RippleButton } from "./ui/ripple";
 
@@ -38,6 +39,7 @@ interface ProxyFormDialogProps {
   isOpen: boolean;
   onClose: () => void;
   editingProxy?: StoredProxy | null;
+  onCreated?: (proxy: StoredProxy) => void;
 }
 
 const DEFAULT_FORM: ProxyFormData = {
@@ -53,6 +55,7 @@ export function ProxyFormDialog({
   isOpen,
   onClose,
   editingProxy,
+  onCreated,
 }: ProxyFormDialogProps) {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,12 +85,27 @@ export function ProxyFormDialog({
     });
   }, [editingProxy, isOpen, resetForm]);
 
-  const handleSubmit = useCallback(async () => {
-    if (!form.name.trim()) {
-      toast.error(t("proxies.form.nameRequired"));
-      return;
-    }
+  // Pasting a full proxy string (scheme://user:pass@host:port,
+  // host:port:user:pass, …) into the name or host field fills the
+  // whole form instead of dumping the raw line into one input.
+  const handleProxyPaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      const parsed = parseProxyString(e.clipboardData.getData("text"));
+      if (!parsed) return;
+      e.preventDefault();
+      setForm((prev) => ({
+        ...prev,
+        proxy_type: parsed.proxy_type ?? prev.proxy_type,
+        host: parsed.host,
+        port: parsed.port,
+        username: parsed.username ?? "",
+        password: parsed.password ?? "",
+      }));
+    },
+    [],
+  );
 
+  const handleSubmit = useCallback(async () => {
     if (!form.host.trim() || !form.port) {
       toast.error(t("proxies.form.hostPortRequired"));
       return;
@@ -104,7 +122,7 @@ export function ProxyFormDialog({
     setIsSubmitting(true);
     try {
       const payload = {
-        name: form.name.trim(),
+        name: form.name.trim() || `${form.host.trim()}:${form.port}`,
         proxySettings: {
           proxy_type: form.proxy_type,
           host: form.host.trim(),
@@ -121,8 +139,12 @@ export function ProxyFormDialog({
         });
         toast.success(t("toasts.success.proxyUpdated"));
       } else {
-        await invoke("create_stored_proxy", payload);
+        const created = await invoke<StoredProxy>(
+          "create_stored_proxy",
+          payload,
+        );
         toast.success(t("toasts.success.proxyCreated"));
+        onCreated?.(created);
       }
 
       onClose();
@@ -136,7 +158,7 @@ export function ProxyFormDialog({
     } finally {
       setIsSubmitting(false);
     }
-  }, [editingProxy, form, onClose, t]);
+  }, [editingProxy, form, onClose, onCreated, t]);
 
   const handleClose = useCallback(() => {
     if (!isSubmitting) {
@@ -145,7 +167,6 @@ export function ProxyFormDialog({
   }, [isSubmitting, onClose]);
 
   const isFormValid =
-    form.name.trim() &&
     form.host.trim() &&
     form.port > 0 &&
     form.port <= 65535 &&
@@ -170,7 +191,8 @@ export function ProxyFormDialog({
               onChange={(e) => {
                 setForm({ ...form, name: e.target.value });
               }}
-              placeholder={t("proxies.form.namePlaceholder")}
+              onPaste={handleProxyPaste}
+              placeholder={t("proxies.form.nameOptionalPlaceholder")}
               disabled={isSubmitting}
             />
           </div>
@@ -206,6 +228,7 @@ export function ProxyFormDialog({
                 onChange={(e) => {
                   setForm({ ...form, host: e.target.value });
                 }}
+                onPaste={handleProxyPaste}
                 placeholder={t("proxies.form.hostPlaceholder")}
                 disabled={isSubmitting}
               />

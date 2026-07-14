@@ -419,7 +419,8 @@
       "newVpn": "新建 VPN",
       "protocolCol": "协议",
       "hostPort": "主机 : 端口",
-      "title": "代理和 VPN"
+      "title": "代理和 VPN",
+      "searchPlaceholder": "按名称、主机、端口或国家搜索..."
     },
     "add": "添加代理",
     "edit": "编辑代理",
@@ -446,7 +447,8 @@
       "hostPortRequired": "主机和端口为必填项",
       "ssCipherRequired": "Shadowsocks 需要密码学和密码",
       "selectType": "选择代理类型",
-      "saveFailed": "保存代理失败: {{error}}"
+      "saveFailed": "保存代理失败: {{error}}",
+      "nameOptionalPlaceholder": "可选 — 默认为 主机:端口"
     },
     "types": {
       "http": "HTTP",

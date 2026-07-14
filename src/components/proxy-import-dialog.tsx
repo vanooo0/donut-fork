@@ -18,6 +18,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getCurrentOS } from "@/lib/browser-utils";
 import type {
   ParsedProxyLine,
@@ -57,6 +64,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
   const [namePrefix, setNamePrefix] = useState(
     t("proxies.importDialog.namePrefixDefault"),
   );
+  const [ambiguousProtocol, setAmbiguousProtocol] = useState("http");
 
   const os = getCurrentOS();
   const modKey = os === "macos" ? "⌘" : "Ctrl";
@@ -70,6 +78,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
     setImportResult(null);
     setIsImporting(false);
     setNamePrefix(t("proxies.importDialog.namePrefixDefault"));
+    setAmbiguousProtocol("http");
   }, [t]);
 
   const processContent = useCallback(
@@ -250,7 +259,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
         const parts = p.line.split(":");
         if (p.selectedFormat === "host:port:username:password") {
           return {
-            proxy_type: "http",
+            proxy_type: ambiguousProtocol,
             host: parts[0],
             port: Number.parseInt(parts[1], 10),
             username: parts[2],
@@ -260,7 +269,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
         }
         // username:password:host:port
         return {
-          proxy_type: "http",
+          proxy_type: ambiguousProtocol,
           host: parts[2],
           port: Number.parseInt(parts[3], 10),
           username: parts[0],
@@ -271,7 +280,7 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
 
     setParsedProxies((prev) => [...prev, ...resolved]);
     setStep("preview");
-  }, [ambiguousProxies]);
+  }, [ambiguousProxies, ambiguousProtocol]);
 
   const handleClose = useCallback(() => {
     resetState();
@@ -407,6 +416,24 @@ export function ProxyImportDialog({ isOpen, onClose }: ProxyImportDialogProps) {
             <p className="text-sm text-muted-foreground">
               {t("proxies.importDialog.ambiguousIntro")}
             </p>
+            <div className="grid gap-2">
+              <Label>{t("proxies.form.type")}</Label>
+              <Select
+                value={ambiguousProtocol}
+                onValueChange={setAmbiguousProtocol}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["http", "https", "socks4", "socks5"].map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <ScrollArea className="h-[clamp(150px,35vh,450px)] rounded-md border">
               <div className="space-y-4 p-3">
                 {ambiguousProxies.map((proxy, i) => (

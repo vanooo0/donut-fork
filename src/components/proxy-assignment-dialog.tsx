@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { LuCheck, LuChevronsUpDown } from "react-icons/lu";
 import { toast } from "sonner";
 import { LoadingButton } from "@/components/loading-button";
+import { ProxyOptionLabel } from "@/components/proxy-option-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { getProxyHostPort, getProxySearchValue } from "@/lib/proxy-utils";
 import { cn } from "@/lib/utils";
 import type { BrowserProfile, StoredProxy, VpnConfig } from "@/types";
 import { RippleButton } from "./ui/ripple";
@@ -199,7 +201,15 @@ export function ProxyAssignmentDialog({
                     const proxy = storedProxies.find(
                       (p) => p.id === selectedId,
                     );
-                    return proxy ? proxy.name : t("proxyAssignment.noneOption");
+                    if (!proxy) return t("proxyAssignment.noneOption");
+                    return (
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="truncate">{proxy.name}</span>
+                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                          {getProxyHostPort(proxy)}
+                        </span>
+                      </span>
+                    );
                   })()}
                   <LuChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
@@ -241,7 +251,7 @@ export function ProxyAssignmentDialog({
                         .map((proxy) => (
                           <CommandItem
                             key={proxy.id}
-                            value={proxy.name}
+                            value={`${getProxySearchValue(proxy)} ${proxy.id}`}
                             onSelect={() => {
                               handleValueChange(proxy.id);
                               setProxyPopoverOpen(false);
@@ -249,14 +259,14 @@ export function ProxyAssignmentDialog({
                           >
                             <LuCheck
                               className={cn(
-                                "mr-2 size-4",
+                                "mr-2 size-4 shrink-0",
                                 selectionType === "proxy" &&
                                   selectedId === proxy.id
                                   ? "opacity-100"
                                   : "opacity-0",
                               )}
                             />
-                            {proxy.name}
+                            <ProxyOptionLabel proxy={proxy} />
                           </CommandItem>
                         ))}
                     </CommandGroup>

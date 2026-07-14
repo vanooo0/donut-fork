@@ -14,6 +14,7 @@ import { GoPlus } from "react-icons/go";
 import { LuCheck, LuChevronsUpDown, LuLoaderCircle } from "react-icons/lu";
 import { LoadingButton } from "@/components/loading-button";
 import { ProxyFormDialog } from "@/components/proxy-form-dialog";
+import { ProxyOptionLabel } from "@/components/proxy-option-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,6 +54,7 @@ import { useBrowserDownload } from "@/hooks/use-browser-download";
 import { useProxyEvents } from "@/hooks/use-proxy-events";
 import { useVpnEvents } from "@/hooks/use-vpn-events";
 import { getBrowserIcon } from "@/lib/browser-utils";
+import { getProxyHostPort, getProxySearchValue } from "@/lib/proxy-utils";
 import { cn } from "@/lib/utils";
 import type { BrowserReleaseTypes, WayfernConfig, WayfernOS } from "@/types";
 
@@ -1042,9 +1044,17 @@ export function CreateProfileDialog({
                                     const proxy = storedProxies.find(
                                       (p) => p.id === selectedProxyId,
                                     );
+                                    if (!proxy)
+                                      return t("createProfile.proxy.noProxy");
                                     return (
-                                      proxy?.name ??
-                                      t("createProfile.proxy.noProxy")
+                                      <span className="flex min-w-0 items-center gap-2">
+                                        <span className="truncate">
+                                          {proxy.name}
+                                        </span>
+                                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                                          {getProxyHostPort(proxy)}
+                                        </span>
+                                      </span>
                                     );
                                   })()}
                                   <LuChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -1052,7 +1062,7 @@ export function CreateProfileDialog({
                               </PopoverTrigger>
                               <PopoverContent
                                 id={proxyListboxIdAntiDetect}
-                                className="w-[240px] p-0"
+                                className="w-[340px] p-0"
                                 sideOffset={8}
                               >
                                 <Command>
@@ -1086,7 +1096,7 @@ export function CreateProfileDialog({
                                       {storedProxies.map((proxy) => (
                                         <CommandItem
                                           key={proxy.id}
-                                          value={proxy.name}
+                                          value={`${getProxySearchValue(proxy)} ${proxy.id}`}
                                           onSelect={() => {
                                             setSelectedProxyId(proxy.id);
                                             setProxyPopoverOpen(false);
@@ -1094,13 +1104,13 @@ export function CreateProfileDialog({
                                         >
                                           <LuCheck
                                             className={cn(
-                                              "mr-2 size-4",
+                                              "mr-2 size-4 shrink-0",
                                               selectedProxyId === proxy.id
                                                 ? "opacity-100"
                                                 : "opacity-0",
                                             )}
                                           />
-                                          {proxy.name}
+                                          <ProxyOptionLabel proxy={proxy} />
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
@@ -1409,9 +1419,17 @@ export function CreateProfileDialog({
                                     const proxy = storedProxies.find(
                                       (p) => p.id === selectedProxyId,
                                     );
+                                    if (!proxy)
+                                      return t("createProfile.proxy.noProxy");
                                     return (
-                                      proxy?.name ??
-                                      t("createProfile.proxy.noProxy")
+                                      <span className="flex min-w-0 items-center gap-2">
+                                        <span className="truncate">
+                                          {proxy.name}
+                                        </span>
+                                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                                          {getProxyHostPort(proxy)}
+                                        </span>
+                                      </span>
                                     );
                                   })()}
                                   <LuChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
@@ -1419,7 +1437,7 @@ export function CreateProfileDialog({
                               </PopoverTrigger>
                               <PopoverContent
                                 id={proxyListboxIdRegular}
-                                className="w-[240px] p-0"
+                                className="w-[340px] p-0"
                                 sideOffset={8}
                               >
                                 <Command>
@@ -1453,7 +1471,7 @@ export function CreateProfileDialog({
                                       {storedProxies.map((proxy) => (
                                         <CommandItem
                                           key={proxy.id}
-                                          value={proxy.name}
+                                          value={`${getProxySearchValue(proxy)} ${proxy.id}`}
                                           onSelect={() => {
                                             setSelectedProxyId(proxy.id);
                                             setProxyPopoverOpen(false);
@@ -1461,13 +1479,13 @@ export function CreateProfileDialog({
                                         >
                                           <LuCheck
                                             className={cn(
-                                              "mr-2 size-4",
+                                              "mr-2 size-4 shrink-0",
                                               selectedProxyId === proxy.id
                                                 ? "opacity-100"
                                                 : "opacity-0",
                                             )}
                                           />
-                                          {proxy.name}
+                                          <ProxyOptionLabel proxy={proxy} />
                                         </CommandItem>
                                       ))}
                                     </CommandGroup>
@@ -1565,6 +1583,9 @@ export function CreateProfileDialog({
         isOpen={showProxyForm}
         onClose={() => {
           setShowProxyForm(false);
+        }}
+        onCreated={(proxy) => {
+          setSelectedProxyId(proxy.id);
         }}
       />
     </Dialog>

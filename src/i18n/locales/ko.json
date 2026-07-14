@@ -419,7 +419,8 @@
       "newVpn": "새 VPN",
       "protocolCol": "프로토콜",
       "hostPort": "호스트 : 포트",
-      "title": "프록시 및 VPN"
+      "title": "프록시 및 VPN",
+      "searchPlaceholder": "이름, 호스트, 포트, 국가로 검색..."
     },
     "add": "프록시 추가",
     "edit": "프록시 편집",
@@ -446,7 +447,8 @@
       "hostPortRequired": "호스트와 포트는 필수입니다",
       "ssCipherRequired": "Shadowsocks에는 암호화와 비밀번호가 필요합니다",
       "selectType": "프록시 유형 선택",
-      "saveFailed": "프록시 저장 실패: {{error}}"
+      "saveFailed": "프록시 저장 실패: {{error}}",
+      "nameOptionalPlaceholder": "선택 사항 — 기본값은 호스트:포트"
     },
     "types": {
       "http": "HTTP",

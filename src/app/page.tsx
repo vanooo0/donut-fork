@@ -64,6 +64,7 @@ import {
   ONBOARDING_TOUR_FINISHED_EVENT,
   setOnboardingActive,
 } from "@/lib/onboarding-signal";
+import { getProxySearchValue } from "@/lib/proxy-utils";
 import {
   matchesGroupDigit,
   matchesShortcut,
@@ -1549,12 +1550,19 @@ export default function Home() {
         if (profile.tags?.some((tag) => tag.toLowerCase().includes(query)))
           return true;
 
+        // Search in the assigned proxy (name, host:port, geo)
+        if (profile.proxy_id) {
+          const proxy = storedProxies.find((p) => p.id === profile.proxy_id);
+          if (proxy && getProxySearchValue(proxy).toLowerCase().includes(query))
+            return true;
+        }
+
         return false;
       });
     }
 
     return filtered;
-  }, [profiles, selectedGroupId, searchQuery]);
+  }, [profiles, selectedGroupId, searchQuery, storedProxies]);
 
   // Update loading states
   const isLoading = profilesLoading || groupsLoading || proxiesLoading;

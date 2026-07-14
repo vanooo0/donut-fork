@@ -40,6 +40,7 @@ import {
   ProfileInfoDialog,
   ProfileLaunchHookDialog,
 } from "@/components/profile-info-dialog";
+import { ProxyOptionLabel } from "@/components/proxy-option-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -90,6 +91,11 @@ import {
   isCrossOsProfile,
 } from "@/lib/browser-utils";
 import { formatRelativeTime } from "@/lib/flag-utils";
+import {
+  getProxyGeoLabel,
+  getProxyHostPort,
+  getProxySearchValue,
+} from "@/lib/proxy-utils";
 import { cn } from "@/lib/utils";
 import type {
   BrowserProfile,
@@ -871,14 +877,16 @@ const OverflowTooltipText = React.memo<{
 
 OverflowTooltipText.displayName = "OverflowTooltipText";
 
-// Must be rendered inside a <Popover>; the tooltip shows the full assignment
-// name only when it is truncated in the cell.
+// Must be rendered inside a <Popover>; the tooltip shows the assignment's
+// full details (host:port, geo) when provided, or the full name when the
+// cell truncates it.
 const ProxyCellTrigger = React.memo<{
   displayName: string;
   hasAssignment: boolean;
   vpnBadge: string | null;
   isDisabled: boolean;
-}>(({ displayName, hasAssignment, vpnBadge, isDisabled }) => {
+  detail?: string;
+}>(({ displayName, hasAssignment, vpnBadge, isDisabled, detail }) => {
   const textRef = React.useRef<HTMLSpanElement | null>(null);
   const [isOverflowing, setIsOverflowing] = React.useState(false);
 
@@ -920,8 +928,12 @@ const ProxyCellTrigger = React.memo<{
           </span>
         </PopoverTrigger>
       </TooltipTrigger>
-      {hasAssignment && isOverflowing && (
-        <TooltipContent>{displayName}</TooltipContent>
+      {hasAssignment && (detail || isOverflowing) && (
+        <TooltipContent>
+          {isOverflowing ? displayName : null}
+          {isOverflowing && detail ? <br /> : null}
+          {detail ? <span className="font-mono">{detail}</span> : null}
+        </TooltipContent>
       )}
     </Tooltip>
   );
@@ -2733,11 +2745,21 @@ export function ProfilesDataTable({
                   hasAssignment={hasAssignment}
                   vpnBadge={vpnBadge}
                   isDisabled={isDisabled}
+                  detail={
+                    effectiveProxy
+                      ? [
+                          getProxyHostPort(effectiveProxy),
+                          getProxyGeoLabel(effectiveProxy),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")
+                      : undefined
+                  }
                 />
 
                 {!isDisabled && (
                   <PopoverContent
-                    className="w-[240px] p-0"
+                    className="w-[340px] p-0"
                     align="end"
                     sideOffset={8}
                   >
@@ -2783,7 +2805,7 @@ export function ProfilesDataTable({
                             .map((proxy: StoredProxy) => (
                               <CommandItem
                                 key={proxy.id}
-                                value={proxy.name}
+                                value={`${getProxySearchValue(proxy)} ${proxy.id}`}
                                 onSelect={() =>
                                   void meta.handleProxySelection(
                                     profile.id,
@@ -2793,14 +2815,14 @@ export function ProfilesDataTable({
                               >
                                 <LuCheck
                                   className={cn(
-                                    "mr-2 size-4",
+                                    "mr-2 size-4 shrink-0",
                                     effectiveProxyId === proxy.id &&
                                       !effectiveVpn
                                       ? "opacity-100"
                                       : "opacity-0",
                                   )}
                                 />
-                                {proxy.name}
+                                <ProxyOptionLabel proxy={proxy} />
                               </CommandItem>
                             ))}
                         </CommandGroup>

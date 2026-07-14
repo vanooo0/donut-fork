@@ -419,7 +419,8 @@
       "newVpn": "新しいVPN",
       "protocolCol": "プロトコル",
       "hostPort": "ホスト : ポート",
-      "title": "プロキシと VPN"
+      "title": "プロキシと VPN",
+      "searchPlaceholder": "名前、ホスト、ポート、国で検索..."
     },
     "add": "プロキシを追加",
     "edit": "プロキシを編集",
@@ -446,7 +447,8 @@
       "hostPortRequired": "ホストとポートが必要です",
       "ssCipherRequired": "Shadowsocks には暗号とパスワードが必要です",
       "selectType": "プロキシの種類を選択",
-      "saveFailed": "プロキシの保存に失敗しました: {{error}}"
+      "saveFailed": "プロキシの保存に失敗しました: {{error}}",
+      "nameOptionalPlaceholder": "任意 — 既定は ホスト:ポート"
     },
     "types": {
       "http": "HTTP",

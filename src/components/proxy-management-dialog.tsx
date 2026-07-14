@@ -17,9 +17,11 @@ import { GoPlus } from "react-icons/go";
 import {
   LuChevronDown,
   LuChevronUp,
+  LuCopy,
   LuDownload,
   LuPencil,
   LuRefreshCw,
+  LuSearch,
   LuTrash2,
   LuUpload,
 } from "react-icons/lu";
@@ -30,6 +32,7 @@ import {
   DataTableActionBarSelection,
 } from "@/components/data-table-action-bar";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { FlagIcon } from "@/components/flag-icon";
 import { ProxyExportDialog } from "@/components/proxy-export-dialog";
 import { ProxyFormDialog } from "@/components/proxy-form-dialog";
 import { ProxyImportDialog } from "@/components/proxy-import-dialog";
@@ -52,6 +55,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { FadingScrollArea } from "@/components/ui/fading-scroll-area";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -68,6 +72,11 @@ import {
 import { useProxyEvents } from "@/hooks/use-proxy-events";
 import { useVpnEvents } from "@/hooks/use-vpn-events";
 import { parseBackendError, translateBackendError } from "@/lib/backend-errors";
+import {
+  getProxyGeoLabel,
+  getProxyHostPort,
+  getProxySearchValue,
+} from "@/lib/proxy-utils";
 import { showErrorToast, showSuccessToast } from "@/lib/toast-utils";
 import { cn } from "@/lib/utils";
 import type { ProxyCheckResult, StoredProxy, VpnConfig } from "@/types";
@@ -144,6 +153,7 @@ export function ProxyManagementDialog({
   const { t } = useTranslation();
   // Proxy state
   const [showProxyForm, setShowProxyForm] = useState(false);
+  const [proxySearch, setProxySearch] = useState("");
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [editingProxy, setEditingProxy] = useState<StoredProxy | null>(null);
@@ -551,11 +561,27 @@ export function ProxyManagementDialog({
             ) : null}
           </Button>
         ),
-        cell: ({ row }) => (
-          <span className="block truncate font-medium">
-            {row.original.name}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const proxy = row.original;
+          const geo = getProxyGeoLabel(proxy);
+          return (
+            <div className="flex min-w-0 items-center gap-1.5">
+              {proxy.geo_country ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex shrink-0">
+                      <FlagIcon countryCode={proxy.geo_country} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{geo}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : null}
+              <span className="truncate font-medium">{proxy.name}</span>
+            </div>
+          );
+        },
       },
       {
         id: "protocol",
@@ -570,20 +596,86 @@ export function ProxyManagementDialog({
       },
       {
         id: "hostPort",
-        enableSorting: false,
-        header: () => t("proxies.management.hostPort"),
-        cell: ({ row }) => (
-          <span className="block truncate font-mono text-xs text-muted-foreground">
-            {row.original.proxy_settings.host}:
-            {row.original.proxy_settings.port}
-          </span>
+        accessorFn: (row) => getProxyHostPort(row),
+        enableSorting: true,
+        sortingFn: "alphanumeric",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              column.toggleSorting(column.getIsSorted() === "asc");
+            }}
+            className="h-auto cursor-pointer justify-start p-0 text-left font-semibold"
+          >
+            {t("proxies.management.hostPort")}
+            {column.getIsSorted() === "asc" ? (
+              <LuChevronUp className="ml-2 size-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <LuChevronDown className="ml-2 size-4" />
+            ) : null}
+          </Button>
         ),
+        cell: ({ row }) => {
+          const proxy = row.original;
+          return (
+            <div className="group/hostport flex min-w-0 items-center gap-1">
+              <span className="truncate font-mono text-xs text-muted-foreground">
+                {getProxyHostPort(proxy)}
+              </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="size-6 shrink-0 p-0 opacity-0 group-hover/hostport:opacity-100 focus-visible:opacity-100"
+                    aria-label={t("common.aria.copy")}
+                    onClick={() => {
+                      const { host, port, username, password, proxy_type } =
+                        proxy.proxy_settings;
+                      const creds =
+                        username || password
+                          ? `${username ?? ""}:${password ?? ""}@`
+                          : "";
+                      void navigator.clipboard
+                        .writeText(`${proxy_type}://${creds}${host}:${port}`)
+                        .then(() => {
+                          showSuccessToast(t("common.buttons.copied"));
+                        });
+                    }}
+                  >
+                    <LuCopy className="size-3" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("common.aria.copy")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          );
+        },
       },
       {
         id: "usage",
         size: 80,
-        enableSorting: false,
-        header: () => t("proxies.management.usage"),
+        accessorFn: (row) => proxyUsage[row.id] ?? 0,
+        enableSorting: true,
+        sortingFn: "basic",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              column.toggleSorting(column.getIsSorted() === "asc");
+            }}
+            className="h-auto cursor-pointer justify-start p-0 text-left font-semibold"
+          >
+            {t("proxies.management.usage")}
+            {column.getIsSorted() === "asc" ? (
+              <LuChevronUp className="ml-2 size-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <LuChevronDown className="ml-2 size-4" />
+            ) : null}
+          </Button>
+        ),
         cell: ({ row }) => (
           <Badge variant="secondary">{proxyUsage[row.original.id] ?? 0}</Badge>
         ),
@@ -717,8 +809,16 @@ export function ProxyManagementDialog({
     ],
   );
 
+  const filteredProxies = useMemo(() => {
+    const query = proxySearch.toLowerCase().trim();
+    if (!query) return storedProxies;
+    return storedProxies.filter((proxy) =>
+      getProxySearchValue(proxy).toLowerCase().includes(query),
+    );
+  }, [storedProxies, proxySearch]);
+
   const proxiesTable = useReactTable({
-    data: storedProxies,
+    data: filteredProxies,
     columns: proxyColumns,
     state: {
       sorting: proxiesSorting,
@@ -1248,95 +1348,118 @@ export function ProxyManagementDialog({
                       {t("proxies.management.noneCreated")}
                     </div>
                   ) : (
-                    <FadingScrollArea
-                      className={cn(
-                        "min-h-0 flex-1",
-                        selectedProxies.length > 0 && "pb-16",
-                      )}
-                      style={
-                        {
-                          "--scroll-fade-top-offset": "32px",
-                        } as React.CSSProperties
-                      }
-                    >
-                      <Table
-                        className="w-full table-fixed"
-                        containerClassName="overflow-visible"
+                    <>
+                      <div className="relative shrink-0">
+                        <LuSearch className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={proxySearch}
+                          onChange={(e) => {
+                            setProxySearch(e.target.value);
+                          }}
+                          placeholder={t(
+                            "proxies.management.searchPlaceholder",
+                          )}
+                          className="pl-9"
+                        />
+                      </div>
+                      {filteredProxies.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">
+                          {t("createProfile.proxy.notFound")}
+                        </div>
+                      ) : null}
+                      <FadingScrollArea
+                        className={cn(
+                          "min-h-0 flex-1",
+                          selectedProxies.length > 0 && "pb-16",
+                        )}
+                        style={
+                          {
+                            "--scroll-fade-top-offset": "32px",
+                          } as React.CSSProperties
+                        }
                       >
-                        <TableHeader className="sticky top-0 z-10 bg-background">
-                          {proxiesTable.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                              {headerGroup.headers.map((header) => (
-                                <TableHead
-                                  key={header.id}
-                                  style={{
-                                    width:
-                                      header.column.id === "name" ||
-                                      header.column.id === "hostPort"
-                                        ? undefined
-                                        : `${header.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    // name and hostPort emit no width, so
-                                    // fixed layout splits the remaining
-                                    // space evenly between them (hostPort
-                                    // hides below @2xl, leaving name all
-                                    // of it).
-                                    header.column.id === "name" && "max-w-0",
-                                    header.column.id === "hostPort" &&
-                                      "hidden max-w-0 @2xl:table-cell",
-                                    (header.column.id === "protocol" ||
-                                      header.column.id === "type") &&
-                                      "hidden @2xl:table-cell",
-                                  )}
-                                >
-                                  {header.isPlaceholder
-                                    ? null
-                                    : flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext(),
+                        <Table
+                          className="w-full table-fixed"
+                          containerClassName="overflow-visible"
+                        >
+                          <TableHeader className="sticky top-0 z-10 bg-background">
+                            {proxiesTable
+                              .getHeaderGroups()
+                              .map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                  {headerGroup.headers.map((header) => (
+                                    <TableHead
+                                      key={header.id}
+                                      style={{
+                                        width:
+                                          header.column.id === "name" ||
+                                          header.column.id === "hostPort"
+                                            ? undefined
+                                            : `${header.column.getSize()}px`,
+                                      }}
+                                      className={cn(
+                                        // name and hostPort emit no width, so
+                                        // fixed layout splits the remaining
+                                        // space evenly between them; hostPort
+                                        // stays visible at every width so the
+                                        // address is never hidden.
+                                        header.column.id === "name" &&
+                                          "max-w-0",
+                                        header.column.id === "hostPort" &&
+                                          "max-w-0",
+                                        (header.column.id === "protocol" ||
+                                          header.column.id === "type") &&
+                                          "hidden @2xl:table-cell",
                                       )}
-                                </TableHead>
+                                    >
+                                      {header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext(),
+                                          )}
+                                    </TableHead>
+                                  ))}
+                                </TableRow>
                               ))}
-                            </TableRow>
-                          ))}
-                        </TableHeader>
-                        <TableBody>
-                          {proxiesTable.getRowModel().rows.map((row) => (
-                            <TableRow
-                              key={row.id}
-                              data-state={row.getIsSelected() && "selected"}
-                            >
-                              {row.getVisibleCells().map((cell) => (
-                                <TableCell
-                                  key={cell.id}
-                                  style={{
-                                    width:
-                                      cell.column.id === "name" ||
-                                      cell.column.id === "hostPort"
-                                        ? undefined
-                                        : `${cell.column.getSize()}px`,
-                                  }}
-                                  className={cn(
-                                    cell.column.id === "name" && "max-w-0",
-                                    cell.column.id === "hostPort" &&
-                                      "hidden max-w-0 @2xl:table-cell",
-                                    (cell.column.id === "protocol" ||
-                                      cell.column.id === "type") &&
-                                      "hidden @2xl:table-cell",
-                                  )}
-                                >
-                                  {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext(),
-                                  )}
-                                </TableCell>
-                              ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </FadingScrollArea>
+                          </TableHeader>
+                          <TableBody>
+                            {proxiesTable.getRowModel().rows.map((row) => (
+                              <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && "selected"}
+                              >
+                                {row.getVisibleCells().map((cell) => (
+                                  <TableCell
+                                    key={cell.id}
+                                    style={{
+                                      width:
+                                        cell.column.id === "name" ||
+                                        cell.column.id === "hostPort"
+                                          ? undefined
+                                          : `${cell.column.getSize()}px`,
+                                    }}
+                                    className={cn(
+                                      cell.column.id === "name" && "max-w-0",
+                                      cell.column.id === "hostPort" &&
+                                        "max-w-0",
+                                      (cell.column.id === "protocol" ||
+                                        cell.column.id === "type") &&
+                                        "hidden @2xl:table-cell",
+                                    )}
+                                  >
+                                    {flexRender(
+                                      cell.column.columnDef.cell,
+                                      cell.getContext(),
+                                    )}
+                                  </TableCell>
+                                ))}
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </FadingScrollArea>
+                    </>
                   )}
                 </div>
               </AnimatedTabsContent>
@@ -1386,12 +1509,12 @@ export function ProxyManagementDialog({
                                   className={cn(
                                     // name and hostPort emit no width, so
                                     // fixed layout splits the remaining
-                                    // space evenly between them (hostPort
-                                    // hides below @2xl, leaving name all
-                                    // of it).
+                                    // space evenly between them; hostPort
+                                    // stays visible at every width so the
+                                    // address is never hidden.
                                     header.column.id === "name" && "max-w-0",
                                     header.column.id === "hostPort" &&
-                                      "hidden max-w-0 @2xl:table-cell",
+                                      "max-w-0",
                                     (header.column.id === "protocol" ||
                                       header.column.id === "type") &&
                                       "hidden @2xl:table-cell",
@@ -1426,8 +1549,7 @@ export function ProxyManagementDialog({
                                   }}
                                   className={cn(
                                     cell.column.id === "name" && "max-w-0",
-                                    cell.column.id === "hostPort" &&
-                                      "hidden max-w-0 @2xl:table-cell",
+                                    cell.column.id === "hostPort" && "max-w-0",
                                     (cell.column.id === "protocol" ||
                                       cell.column.id === "type") &&
                                       "hidden @2xl:table-cell",

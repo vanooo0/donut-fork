@@ -419,7 +419,8 @@
       "newVpn": "Новый VPN",
       "protocolCol": "Протокол",
       "hostPort": "Хост : порт",
-      "title": "Прокси и VPN"
+      "title": "Прокси и VPN",
+      "searchPlaceholder": "Поиск по имени, хосту, порту или стране..."
     },
     "add": "Добавить прокси",
     "edit": "Редактировать прокси",
@@ -446,7 +447,8 @@
       "hostPortRequired": "Требуются хост и порт",
       "ssCipherRequired": "Для Shadowsocks требуется шифр и пароль",
       "selectType": "Выберите тип прокси",
-      "saveFailed": "Не удалось сохранить прокси: {{error}}"
+      "saveFailed": "Не удалось сохранить прокси: {{error}}",
+      "nameOptionalPlaceholder": "Необязательно — по умолчанию хост:порт"
     },
     "types": {
       "http": "HTTP",

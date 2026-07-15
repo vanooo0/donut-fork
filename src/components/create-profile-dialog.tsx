@@ -17,7 +17,6 @@ import { ProxyFormDialog } from "@/components/proxy-form-dialog";
 import { ProxyOptionLabel } from "@/components/proxy-option-label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -159,12 +158,6 @@ export function CreateProfileDialog({
   const { vpnConfigs } = useVpnEvents();
   const [showProxyForm, setShowProxyForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [ephemeral, setEphemeral] = useState(false);
-  const [enablePassword, setEnablePassword] = useState(false);
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const PASSWORD_MIN_LEN = 8;
   const [selectedExtensionGroupId, setSelectedExtensionGroupId] =
     useState<string>();
   const [extensionGroups, setExtensionGroups] = useState<
@@ -368,20 +361,6 @@ export function CreateProfileDialog({
   const handleCreate = async () => {
     if (!profileName.trim()) return;
 
-    if (enablePassword && !ephemeral) {
-      if (password.length < PASSWORD_MIN_LEN) {
-        setPasswordError(
-          t("profilePassword.errors.tooShort", { min: PASSWORD_MIN_LEN }),
-        );
-        return;
-      }
-      if (password !== passwordConfirm) {
-        setPasswordError(t("profilePassword.errors.mismatch"));
-        return;
-      }
-    }
-    setPasswordError(null);
-
     setIsCreating(true);
 
     const isVpnSelection = selectedProxyId?.startsWith("vpn-") ?? false;
@@ -389,10 +368,6 @@ export function CreateProfileDialog({
     const resolvedVpnId =
       isVpnSelection && selectedProxyId ? selectedProxyId.slice(4) : undefined;
 
-    const passwordToSet =
-      enablePassword && !ephemeral && password.length >= PASSWORD_MIN_LEN
-        ? password
-        : undefined;
     try {
       if (activeTab === "anti-detect") {
         // Only Wayfern anti-detect profiles are created.
@@ -418,10 +393,9 @@ export function CreateProfileDialog({
               ? selectedGroupId
               : undefined,
           extensionGroupId: selectedExtensionGroupId,
-          ephemeral,
+          ephemeral: false,
           dnsBlocklist: dnsBlocklist || undefined,
           launchHook: launchHook.trim() || undefined,
-          password: passwordToSet,
         });
       } else {
         // Regular browser
@@ -449,7 +423,6 @@ export function CreateProfileDialog({
               : undefined,
           dnsBlocklist: dnsBlocklist || undefined,
           launchHook: launchHook.trim() || undefined,
-          password: passwordToSet,
         });
       }
 
@@ -478,11 +451,6 @@ export function CreateProfileDialog({
     setWayfernConfig({
       os: getCurrentOS(), // Reset to current OS
     });
-    setEphemeral(false);
-    setEnablePassword(false);
-    setPassword("");
-    setPasswordConfirm("");
-    setPasswordError(null);
     onClose();
   };
 
@@ -669,87 +637,6 @@ export function CreateProfileDialog({
                             )}
                           />
                         </div>
-
-                        {/* Ephemeral Option */}
-                        <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-                          <div className="flex items-center gap-x-2">
-                            <Checkbox
-                              id="ephemeral"
-                              checked={ephemeral}
-                              onCheckedChange={(checked) => {
-                                setEphemeral(checked === true);
-                              }}
-                            />
-                            <Label htmlFor="ephemeral" className="font-medium">
-                              {t("profiles.ephemeral")}
-                            </Label>
-                          </div>
-                          <p className="ml-6 text-sm text-muted-foreground">
-                            {t("profiles.ephemeralDescription")}
-                          </p>
-                        </div>
-
-                        {/* Password Option */}
-                        {!ephemeral && (
-                          <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-                            <div className="flex items-center gap-x-2">
-                              <Checkbox
-                                id="enable-password"
-                                checked={enablePassword}
-                                onCheckedChange={(checked) => {
-                                  setEnablePassword(checked === true);
-                                  if (checked !== true) {
-                                    setPassword("");
-                                    setPasswordConfirm("");
-                                    setPasswordError(null);
-                                  }
-                                }}
-                              />
-                              <Label
-                                htmlFor="enable-password"
-                                className="font-medium"
-                              >
-                                {t("createProfile.passwordProtect.label")}
-                              </Label>
-                            </div>
-                            <p className="ml-6 text-sm text-muted-foreground">
-                              {t("createProfile.passwordProtect.description")}
-                            </p>
-                            {enablePassword && (
-                              <div className="ml-6 space-y-2">
-                                <Input
-                                  type="password"
-                                  value={password}
-                                  onChange={(e) => {
-                                    setPassword(e.target.value);
-                                    setPasswordError(null);
-                                  }}
-                                  placeholder={t(
-                                    "profilePassword.fields.newPassword",
-                                  )}
-                                  autoComplete="new-password"
-                                />
-                                <Input
-                                  type="password"
-                                  value={passwordConfirm}
-                                  onChange={(e) => {
-                                    setPasswordConfirm(e.target.value);
-                                    setPasswordError(null);
-                                  }}
-                                  placeholder={t(
-                                    "profilePassword.fields.confirm",
-                                  )}
-                                  autoComplete="new-password"
-                                />
-                                {passwordError && (
-                                  <p className="text-sm text-destructive">
-                                    {passwordError}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
 
                         {selectedBrowser === "wayfern" ? (
                           // Wayfern Configuration

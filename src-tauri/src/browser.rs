@@ -324,6 +324,10 @@ impl Browser for WayfernBrowser {
 
     if let Some(url) = url {
       args.push(url);
+    } else {
+      // No explicit URL: reopen the tabs from the previous session so a
+      // normal profile keeps its open pages across launches.
+      args.push("--restore-last-session".to_string());
     }
 
     Ok(args)

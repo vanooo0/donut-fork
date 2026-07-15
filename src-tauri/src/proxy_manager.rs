@@ -904,6 +904,46 @@ impl ProxyManager {
     Ok(updated_proxy)
   }
 
+  /// Persist the geolocation discovered by a proxy check onto the stored
+  /// proxy so its country flag / city show up in every proxy picker. This is
+  /// derived bookkeeping, not a user edit — it does NOT bump `updated_at` and
+  /// does NOT trigger sync. Cloud proxies already carry authoritative geo and
+  /// are left untouched.
+  pub fn set_stored_proxy_geo(
+    &self,
+    proxy_id: &str,
+    country_code: Option<String>,
+    city: Option<String>,
+  ) -> Result<(), String> {
+    let updated_proxy = {
+      let mut stored_proxies = self.stored_proxies.lock().unwrap();
+      let Some(proxy) = stored_proxies.get_mut(proxy_id) else {
+        return Ok(());
+      };
+      if proxy.is_cloud_managed || proxy.is_cloud_derived {
+        return Ok(());
+      }
+
+      let cc = country_code.map(|c| c.to_uppercase());
+      if proxy.geo_country == cc && proxy.geo_city == city {
+        return Ok(());
+      }
+      proxy.geo_country = cc;
+      proxy.geo_city = city;
+      proxy.clone()
+    };
+
+    self
+      .save_proxy(&updated_proxy)
+      .map_err(|e| format!("Failed to save proxy: {e}"))?;
+
+    if let Err(e) = events::emit_empty("proxies-changed") {
+      log::error!("Failed to emit proxies-changed event: {e}");
+    }
+
+    Ok(())
+  }
+
   // Delete a stored proxy
   pub fn delete_stored_proxy(
     &self,
@@ -1144,6 +1184,10 @@ impl ProxyManager {
 
     // Save to cache
     let _ = self.save_proxy_check_cache(proxy_id, &result);
+
+    // Remember the discovered country/city on the proxy itself so its flag
+    // shows up in every picker (no-op for cloud proxies / unknown geo).
+    let _ = self.set_stored_proxy_geo(proxy_id, result.country_code.clone(), result.city.clone());
 
     Ok(result)
   }

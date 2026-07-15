@@ -145,6 +145,12 @@ export function ProxyFormDialog({
         );
         toast.success(t("toasts.success.proxyCreated"));
         onCreated?.(created);
+        // Silently detect the proxy's country in the background so its flag
+        // shows up in the pickers without a manual check.
+        void invoke("check_proxy_validity", {
+          proxyId: created.id,
+          proxySettings: created.proxy_settings,
+        }).catch(() => {});
       }
 
       onClose();

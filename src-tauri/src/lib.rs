@@ -46,6 +46,7 @@ mod settings_manager;
 pub mod socks5_local;
 pub mod sync;
 mod synchronizer;
+mod traffic_guard;
 pub mod traffic_stats;
 mod wayfern_manager;
 mod wayfern_terms;
@@ -256,6 +257,28 @@ pub(crate) fn wrap_backend_error(e: impl std::fmt::Display, context: &str) -> St
   } else {
     format!("{context}: {msg}")
   }
+}
+
+/// Live view of the metered-traffic budget for the UI.
+#[tauri::command]
+async fn get_traffic_budget() -> Result<crate::traffic_guard::TrafficBudgetStatus, String> {
+  Ok(crate::traffic_guard::budget_status())
+}
+
+/// Start a fresh count after topping the proxy plan up: the baseline moves to
+/// whatever has been spent so far, so usage restarts at zero without wiping
+/// the traffic history the charts are drawn from.
+#[tauri::command]
+async fn reset_traffic_budget() -> Result<crate::traffic_guard::TrafficBudgetStatus, String> {
+  let manager = settings_manager::SettingsManager::instance();
+  let mut settings = manager
+    .load_settings()
+    .map_err(|e| format!("Failed to load settings: {e}"))?;
+  settings.traffic_baseline_bytes = crate::traffic_guard::total_used_bytes();
+  manager
+    .save_settings(&settings)
+    .map_err(|e| format!("Failed to save settings: {e}"))?;
+  Ok(crate::traffic_guard::budget_status())
 }
 
 /// Bundle every profile, proxy, VPN, group, extension and setting into one
@@ -1471,6 +1494,9 @@ pub fn run() {
       // Recover ephemeral dir mappings from RAM-backed storage (tmpfs/ramdisk)
       ephemeral_dirs::recover_ephemeral_dirs();
 
+      // Watch metered proxy traffic and cut it off on limit / spike
+      traffic_guard::start_guard();
+
       // Extract icons and metadata for existing extensions that don't have them yet
       {
         let mgr = extension_manager::ExtensionManager::new();
@@ -2301,6 +2327,8 @@ pub fn run() {
       ensure_active_browsers_downloaded,
       export_backup_file,
       import_backup_file,
+      get_traffic_budget,
+      reset_traffic_budget,
       create_stored_proxy,
       get_stored_proxies,
       update_stored_proxy,

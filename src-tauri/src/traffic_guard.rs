@@ -13,6 +13,7 @@
 //! fail. So a stop can never leak the real IP.
 
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -29,6 +30,47 @@ const MAX_RATE_GAP_SECS: u64 = 120;
 lazy_static::lazy_static! {
   /// Last (unix_secs, cumulative_bytes) sample, for the rate calculation.
   static ref LAST_SAMPLE: Mutex<Option<(u64, u64)>> = Mutex::new(None);
+}
+
+/// Budget config. Deliberately stored in its own file rather than in
+/// `AppSettings`: the settings dialog saves the whole settings object from a
+/// snapshot it loaded earlier, so a limit set here would be silently wiped
+/// the next time someone changed a theme. Separate file, no clobbering.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TrafficBudgetConfig {
+  /// Hard cap in bytes counted from `baseline_bytes`. `None` = no cap.
+  #[serde(default)]
+  pub limit_bytes: Option<u64>,
+  /// Bytes already spent when the budget was last reset, so topping the plan
+  /// up restarts the count without wiping traffic history.
+  #[serde(default)]
+  pub baseline_bytes: u64,
+  /// Bytes per minute above which the guard cuts traffic. `None` = off.
+  #[serde(default)]
+  pub spike_bytes_per_min: Option<u64>,
+}
+
+fn config_path() -> PathBuf {
+  crate::app_dirs::settings_dir().join("traffic_budget.json")
+}
+
+pub fn load_config() -> TrafficBudgetConfig {
+  // A missing or unreadable file must mean "no limits configured", never an
+  // accidental limit.
+  std::fs::read_to_string(config_path())
+    .ok()
+    .and_then(|raw| serde_json::from_str(&raw).ok())
+    .unwrap_or_default()
+}
+
+pub fn save_config(config: &TrafficBudgetConfig) -> Result<(), String> {
+  let path = config_path();
+  if let Some(parent) = path.parent() {
+    std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create settings dir: {e}"))?;
+  }
+  let json =
+    serde_json::to_string_pretty(config).map_err(|e| format!("Failed to serialize: {e}"))?;
+  std::fs::write(&path, json).map_err(|e| format!("Failed to write traffic budget: {e}"))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -74,30 +116,17 @@ pub fn used_since_baseline(baseline: u64) -> u64 {
 }
 
 pub fn budget_status() -> TrafficBudgetStatus {
-  // Unreadable settings must not invent a limit — report "no cap" and let
-  // the UI show a plain usage number.
-  let Ok(settings) = crate::settings_manager::SettingsManager::instance().load_settings() else {
-    return TrafficBudgetStatus {
-      used_bytes: 0,
-      limit_bytes: None,
-      remaining_bytes: None,
-      limit_reached: false,
-      bytes_per_min: 0,
-      spike_bytes_per_min: None,
-    };
-  };
-
-  let used = used_since_baseline(settings.traffic_baseline_bytes);
-  let limit = settings.traffic_limit_bytes;
-  let remaining = limit.map(|l| l.saturating_sub(used));
+  let config = load_config();
+  let used = used_since_baseline(config.baseline_bytes);
+  let limit = config.limit_bytes;
 
   TrafficBudgetStatus {
     used_bytes: used,
     limit_bytes: limit,
-    remaining_bytes: remaining,
+    remaining_bytes: limit.map(|l| l.saturating_sub(used)),
     limit_reached: limit.is_some_and(|l| used >= l),
     bytes_per_min: current_rate(),
-    spike_bytes_per_min: settings.traffic_spike_bytes_per_min,
+    spike_bytes_per_min: config.spike_bytes_per_min,
   }
 }
 
@@ -160,27 +189,24 @@ pub fn start_guard() {
     loop {
       tokio::time::sleep(SAMPLE_INTERVAL).await;
 
-      let settings = match crate::settings_manager::SettingsManager::instance().load_settings() {
-        Ok(s) => s,
-        Err(_) => continue,
-      };
-      if settings.traffic_limit_bytes.is_none() && settings.traffic_spike_bytes_per_min.is_none() {
-        // Guard disabled: keep sampling so the rate is fresh if it's enabled.
+      let config = load_config();
+      if config.limit_bytes.is_none() && config.spike_bytes_per_min.is_none() {
+        // Guard off: keep sampling so the rate is fresh the moment it's on.
         let _ = sample_rate(total_used_bytes());
         continue;
       }
 
       let total = total_used_bytes();
       let rate = sample_rate(total);
-      let used = total.saturating_sub(settings.traffic_baseline_bytes);
+      let used = total.saturating_sub(config.baseline_bytes);
 
-      if let Some(limit) = settings.traffic_limit_bytes {
+      if let Some(limit) = config.limit_bytes {
         if used >= limit {
           cut_off("limit").await;
           continue;
         }
       }
-      if let Some(spike) = settings.traffic_spike_bytes_per_min {
+      if let Some(spike) = config.spike_bytes_per_min {
         if rate > spike {
           cut_off("spike").await;
         }

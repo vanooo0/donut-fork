@@ -20,12 +20,6 @@ function formatBytes(bytes: number): string {
   return `${Math.round(bytes / 1024)} KB`;
 }
 
-interface TrafficSettings {
-  traffic_limit_bytes?: number | null;
-  traffic_spike_bytes_per_min?: number | null;
-  [key: string]: unknown;
-}
-
 export function TrafficBudgetCard() {
   const { t } = useTranslation();
   const [status, setStatus] = useState<TrafficBudgetStatus | null>(null);
@@ -55,11 +49,10 @@ export function TrafficBudgetCard() {
   useEffect(() => {
     void (async () => {
       try {
-        const s = await invoke<TrafficSettings>("get_app_settings");
-        if (s.traffic_limit_bytes)
-          setLimitGb((s.traffic_limit_bytes / GIB).toString());
-        if (s.traffic_spike_bytes_per_min)
-          setSpikeMb((s.traffic_spike_bytes_per_min / MIB).toString());
+        const s = await invoke<TrafficBudgetStatus>("get_traffic_budget");
+        if (s.limitBytes) setLimitGb((s.limitBytes / GIB).toString());
+        if (s.spikeBytesPerMin)
+          setSpikeMb((s.spikeBytesPerMin / MIB).toString());
       } catch {
         // Leave the inputs empty; saving still works.
       }
@@ -71,28 +64,25 @@ export function TrafficBudgetCard() {
     const spike = Number.parseFloat(spikeMb.replace(",", "."));
     setIsSaving(true);
     try {
-      const current = await invoke<TrafficSettings>("get_app_settings");
-      await invoke("save_app_settings", {
-        settings: {
-          ...current,
-          traffic_limit_bytes:
+      setStatus(
+        await invoke<TrafficBudgetStatus>("set_traffic_limits", {
+          limitBytes:
             Number.isFinite(limit) && limit > 0
               ? Math.round(limit * GIB)
               : null,
-          traffic_spike_bytes_per_min:
+          spikeBytesPerMin:
             Number.isFinite(spike) && spike > 0
               ? Math.round(spike * MIB)
               : null,
-        },
-      });
+        }),
+      );
       showSuccessToast(t("traffic.saved"));
-      await refresh();
     } catch (error) {
       showErrorToast(String(error));
     } finally {
       setIsSaving(false);
     }
-  }, [limitGb, spikeMb, refresh, t]);
+  }, [limitGb, spikeMb, t]);
 
   const handleReset = useCallback(async () => {
     try {

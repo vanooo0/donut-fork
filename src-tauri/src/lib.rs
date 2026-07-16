@@ -265,19 +265,27 @@ async fn get_traffic_budget() -> Result<crate::traffic_guard::TrafficBudgetStatu
   Ok(crate::traffic_guard::budget_status())
 }
 
+/// Set the budget ceilings. `None` for either switches that guard off.
+#[tauri::command]
+async fn set_traffic_limits(
+  limit_bytes: Option<u64>,
+  spike_bytes_per_min: Option<u64>,
+) -> Result<crate::traffic_guard::TrafficBudgetStatus, String> {
+  let mut config = crate::traffic_guard::load_config();
+  config.limit_bytes = limit_bytes;
+  config.spike_bytes_per_min = spike_bytes_per_min;
+  crate::traffic_guard::save_config(&config)?;
+  Ok(crate::traffic_guard::budget_status())
+}
+
 /// Start a fresh count after topping the proxy plan up: the baseline moves to
 /// whatever has been spent so far, so usage restarts at zero without wiping
 /// the traffic history the charts are drawn from.
 #[tauri::command]
 async fn reset_traffic_budget() -> Result<crate::traffic_guard::TrafficBudgetStatus, String> {
-  let manager = settings_manager::SettingsManager::instance();
-  let mut settings = manager
-    .load_settings()
-    .map_err(|e| format!("Failed to load settings: {e}"))?;
-  settings.traffic_baseline_bytes = crate::traffic_guard::total_used_bytes();
-  manager
-    .save_settings(&settings)
-    .map_err(|e| format!("Failed to save settings: {e}"))?;
+  let mut config = crate::traffic_guard::load_config();
+  config.baseline_bytes = crate::traffic_guard::total_used_bytes();
+  crate::traffic_guard::save_config(&config)?;
   Ok(crate::traffic_guard::budget_status())
 }
 
@@ -2328,6 +2336,7 @@ pub fn run() {
       export_backup_file,
       import_backup_file,
       get_traffic_budget,
+      set_traffic_limits,
       reset_traffic_budget,
       create_stored_proxy,
       get_stored_proxies,

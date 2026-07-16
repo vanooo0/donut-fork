@@ -201,6 +201,15 @@ export interface BrowserReleaseTypes {
   stable?: string;
 }
 
+export interface TrafficBudgetStatus {
+  usedBytes: number;
+  limitBytes: number | null;
+  remainingBytes: number | null;
+  limitReached: boolean;
+  bytesPerMin: number;
+  spikeBytesPerMin: number | null;
+}
+
 export interface AppUpdateInfo {
   current_version: string;
   new_version: string;

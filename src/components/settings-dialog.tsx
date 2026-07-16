@@ -11,6 +11,7 @@ import { BackupTransferDialog } from "@/components/backup-transfer-dialog";
 import { DnsBlocklistDialog } from "@/components/dns-blocklist-dialog";
 import { LoadingButton } from "@/components/loading-button";
 import { useTheme } from "@/components/theme-provider";
+import { TrafficBudgetCard } from "@/components/traffic-budget-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1302,6 +1303,8 @@ export function SettingsDialog({
               <p className="text-xs text-muted-foreground">
                 {t("settings.advanced.copyLogsDescription")}
               </p>
+
+              <TrafficBudgetCard />
 
               <div className="border-t pt-3">
                 <RippleButton

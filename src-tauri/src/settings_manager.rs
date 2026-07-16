@@ -63,6 +63,20 @@ pub struct AppSettings {
   /// copy is always re-encrypted regardless of this flag.
   #[serde(default)]
   pub keep_decrypted_profiles_in_ram: bool,
+  /// Hard cap on metered proxy traffic, in bytes, counted from
+  /// `traffic_baseline_bytes`. When it is reached every proxy worker is
+  /// stopped, so nothing can keep spending. `None` = no cap.
+  #[serde(default)]
+  pub traffic_limit_bytes: Option<u64>,
+  /// Total bytes already spent when the budget was last reset. Usage is
+  /// `total_now - baseline`, so topping the plan up starts a fresh count
+  /// without throwing away traffic history.
+  #[serde(default)]
+  pub traffic_baseline_bytes: u64,
+  /// Spike guard: bytes per minute above which the guard stops the proxies.
+  /// Catches a runaway tab burning the plan in minutes. `None` = off.
+  #[serde(default)]
+  pub traffic_spike_bytes_per_min: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]

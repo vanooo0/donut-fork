@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "No se pudo verificar la actualización {{version}} porque no se pudo obtener su archivo de sumas de comprobación. La actualización no se instaló; se reintentará más tarde.",
     "updateChecksumMismatch": "El archivo de actualización descargado {{file}} no superó la verificación de suma de comprobación y fue descartado. Inténtalo de nuevo.",
     "nameCannotBeEmpty": "El nombre no puede estar vacío",
-    "wayfernVersionNotAvailable": "La versión {{requested}} de Wayfern no está disponible para descargar. La versión actual es {{current}}."
+    "wayfernVersionNotAvailable": "La versión {{requested}} de Wayfern no está disponible para descargar. La versión actual es {{current}}.",
+    "backupPasswordRequired": "Introduce una contraseña para el archivo de copia.",
+    "backupWriteFailed": "No se pudo escribir el archivo de copia. Revisa la carpeta y el espacio libre en disco.",
+    "backupReadFailed": "No se pudo leer el archivo de copia.",
+    "backupNotABackup": "Ese archivo no es una copia de Donut.",
+    "backupWrongPassword": "Contraseña incorrecta para este archivo de copia.",
+    "backupCorrupt": "El archivo de copia está dañado."
   },
   "rail": {
     "profiles": "Perfiles",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "No hay otros perfiles Wayfern seleccionados"
+  },
+  "backup": {
+    "title": "Pasar a otro ordenador",
+    "description": "Guarda todo — perfiles, cookies, pestañas, inicios de sesión, proxies — en un archivo cifrado y cárgalo en otro ordenador para seguir como si nada.",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "passwordHint": "El archivo no sirve de nada sin esta contraseña. Nadie puede recuperarla por ti: anótala.",
+    "exportButton": "Guardar en archivo",
+    "importButton": "Cargar desde archivo",
+    "openButton": "Pasar a otro ordenador",
+    "settingsHint": "Traslada toda tu configuración con un archivo cifrado. Sin cuenta ni servidor.",
+    "saveTitle": "Guardar copia",
+    "openTitle": "Elegir archivo de copia",
+    "exportDone": "Copia guardada",
+    "importDone": "Copia cargada: reiniciando",
+    "importWarning": "Al cargar se reemplazan los perfiles con el mismo nombre y se reinicia la app. Cierra los navegadores primero."
   }
 }

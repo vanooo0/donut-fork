@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "업데이트 {{version}}의 체크섬 파일을 가져올 수 없어 검증하지 못했습니다. 업데이트가 설치되지 않았으며 나중에 다시 시도됩니다.",
     "updateChecksumMismatch": "다운로드한 업데이트 파일 {{file}}이(가) 체크섬 검증에 실패하여 삭제되었습니다. 다시 시도해 주세요.",
     "nameCannotBeEmpty": "이름은 비워둘 수 없습니다",
-    "wayfernVersionNotAvailable": "Wayfern 버전 {{requested}}은(는) 다운로드할 수 없습니다. 현재 버전은 {{current}}입니다."
+    "wayfernVersionNotAvailable": "Wayfern 버전 {{requested}}은(는) 다운로드할 수 없습니다. 현재 버전은 {{current}}입니다.",
+    "backupPasswordRequired": "백업 파일의 비밀번호를 입력하세요.",
+    "backupWriteFailed": "백업 파일을 쓸 수 없습니다. 폴더와 디스크 여유 공간을 확인하세요.",
+    "backupReadFailed": "백업 파일을 읽을 수 없습니다.",
+    "backupNotABackup": "이 파일은 Donut 백업이 아닙니다.",
+    "backupWrongPassword": "이 백업 파일의 비밀번호가 틀렸습니다.",
+    "backupCorrupt": "백업 파일이 손상되었습니다."
   },
   "rail": {
     "profiles": "프로필",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "선택된 다른 Wayfern 프로필이 없습니다"
+  },
+  "backup": {
+    "title": "다른 컴퓨터로 옮기기",
+    "description": "프로필, 쿠키, 탭, 로그인, 프록시를 전부 암호화된 파일 하나에 저장하고, 다른 컴퓨터에서 불러오면 그대로 이어서 사용할 수 있습니다.",
+    "password": "비밀번호",
+    "passwordPlaceholder": "8자 이상",
+    "passwordHint": "이 비밀번호가 없으면 파일을 쓸 수 없습니다. 복구해 줄 수 없으니 꼭 적어 두세요.",
+    "exportButton": "파일로 저장",
+    "importButton": "파일에서 불러오기",
+    "openButton": "다른 컴퓨터로 옮기기",
+    "settingsHint": "암호화된 파일 하나로 전체 설정을 옮깁니다. 계정도 서버도 필요 없습니다.",
+    "saveTitle": "백업 저장",
+    "openTitle": "백업 파일 선택",
+    "exportDone": "백업을 저장했습니다",
+    "importDone": "백업을 불러왔습니다 — 다시 시작합니다",
+    "importWarning": "불러오면 이름이 같은 프로필이 교체되고 앱이 다시 시작됩니다. 브라우저를 먼저 닫으세요."
   }
 }

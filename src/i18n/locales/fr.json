@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "La mise à jour {{version}} n'a pas pu être vérifiée car son fichier de sommes de contrôle n'a pas pu être récupéré. La mise à jour n'a pas été installée ; une nouvelle tentative aura lieu plus tard.",
     "updateChecksumMismatch": "Le fichier de mise à jour téléchargé {{file}} a échoué à la vérification de la somme de contrôle et a été supprimé. Veuillez réessayer.",
     "nameCannotBeEmpty": "Le nom ne peut pas être vide",
-    "wayfernVersionNotAvailable": "La version {{requested}} de Wayfern n'est pas disponible au téléchargement. La version actuelle est {{current}}."
+    "wayfernVersionNotAvailable": "La version {{requested}} de Wayfern n'est pas disponible au téléchargement. La version actuelle est {{current}}.",
+    "backupPasswordRequired": "Saisis un mot de passe pour le fichier de sauvegarde.",
+    "backupWriteFailed": "Impossible d'écrire le fichier de sauvegarde. Vérifie le dossier et l'espace disque disponible.",
+    "backupReadFailed": "Impossible de lire le fichier de sauvegarde.",
+    "backupNotABackup": "Ce fichier n'est pas une sauvegarde Donut.",
+    "backupWrongPassword": "Mot de passe incorrect pour ce fichier de sauvegarde.",
+    "backupCorrupt": "Le fichier de sauvegarde est endommagé."
   },
   "rail": {
     "profiles": "Profils",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "Aucun autre profil Wayfern sélectionné"
+  },
+  "backup": {
+    "title": "Transférer vers un autre ordinateur",
+    "description": "Enregistre tout — profils, cookies, onglets, identifiants, proxys — dans un seul fichier chiffré, puis charge-le sur un autre ordinateur et reprends comme si de rien n'était.",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "8 caractères minimum",
+    "passwordHint": "Le fichier est inutilisable sans ce mot de passe. Personne ne peut le récupérer à ta place : note-le.",
+    "exportButton": "Enregistrer dans un fichier",
+    "importButton": "Charger depuis un fichier",
+    "openButton": "Transférer vers un autre ordinateur",
+    "settingsHint": "Transfère toute ta configuration avec un fichier chiffré. Sans compte ni serveur.",
+    "saveTitle": "Enregistrer la sauvegarde",
+    "openTitle": "Choisir un fichier de sauvegarde",
+    "exportDone": "Sauvegarde enregistrée",
+    "importDone": "Sauvegarde chargée — redémarrage",
+    "importWarning": "Le chargement remplace les profils portant le même nom et redémarre l'app. Ferme d'abord tes navigateurs."
   }
 }

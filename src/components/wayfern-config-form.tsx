@@ -231,7 +231,7 @@ export function WayfernConfigForm({
         <div className="flex items-center gap-x-2">
           <Checkbox
             id="randomize-fingerprint"
-            checked={config.randomize_fingerprint_on_launch ?? false}
+            checked={config.randomize_fingerprint_on_launch ?? true}
             onCheckedChange={(checked) => {
               onConfigChange("randomize_fingerprint_on_launch", checked);
             }}

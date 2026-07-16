@@ -5,14 +5,7 @@ import { useTranslation } from "react-i18next";
 import { FaDownload } from "react-icons/fa";
 import { FiWifi } from "react-icons/fi";
 import { GoGear, GoKebabHorizontal } from "react-icons/go";
-import {
-  LuCloud,
-  LuKeyboard,
-  LuPlug,
-  LuPuzzle,
-  LuUser,
-  LuUsers,
-} from "react-icons/lu";
+import { LuCloud, LuKeyboard, LuUser, LuUsers } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { Logo } from "./icons/logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -247,9 +240,7 @@ interface RailItem {
 const TOP_ITEMS: RailItem[] = [
   { page: "profiles", Icon: LuUser, labelKey: "rail.profiles" },
   { page: "proxies", Icon: FiWifi, labelKey: "rail.network" },
-  { page: "extensions", Icon: LuPuzzle, labelKey: "rail.extensions" },
   { page: "groups", Icon: LuUsers, labelKey: "rail.groups" },
-  { page: "integrations", Icon: LuPlug, labelKey: "rail.integrations" },
   { page: "account", Icon: LuCloud, labelKey: "rail.account" },
 ];
 

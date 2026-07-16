@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "アップデート {{version}} のチェックサムファイルを取得できなかったため、検証できませんでした。アップデートはインストールされませんでした。後で再試行されます。",
     "updateChecksumMismatch": "ダウンロードしたアップデートファイル {{file}} はチェックサム検証に失敗したため破棄されました。もう一度お試しください。",
     "nameCannotBeEmpty": "名前を空にすることはできません",
-    "wayfernVersionNotAvailable": "Wayfernのバージョン{{requested}}はダウンロードできません。現在のバージョンは{{current}}です。"
+    "wayfernVersionNotAvailable": "Wayfernのバージョン{{requested}}はダウンロードできません。現在のバージョンは{{current}}です。",
+    "backupPasswordRequired": "バックアップファイルのパスワードを入力してください。",
+    "backupWriteFailed": "バックアップファイルを書き込めませんでした。フォルダーとディスクの空き容量を確認してください。",
+    "backupReadFailed": "バックアップファイルを読み込めませんでした。",
+    "backupNotABackup": "このファイルは Donut のバックアップではありません。",
+    "backupWrongPassword": "このバックアップファイルのパスワードが違います。",
+    "backupCorrupt": "バックアップファイルが壊れています。"
   },
   "rail": {
     "profiles": "プロファイル",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "他に Wayfern プロファイルが選択されていません"
+  },
+  "backup": {
+    "title": "別のパソコンへ移行",
+    "description": "プロフィール、Cookie、タブ、ログイン、プロキシをすべて暗号化した 1 つのファイルに保存し、別のパソコンで読み込めば、そのまま作業を続けられます。",
+    "password": "パスワード",
+    "passwordPlaceholder": "8 文字以上",
+    "passwordHint": "このパスワードがないとファイルは使えません。復元はできないので必ず控えてください。",
+    "exportButton": "ファイルに保存",
+    "importButton": "ファイルから読み込み",
+    "openButton": "別のパソコンへ移行",
+    "settingsHint": "暗号化ファイル 1 つで環境をまるごと移行します。アカウントもサーバーも不要です。",
+    "saveTitle": "バックアップを保存",
+    "openTitle": "バックアップファイルを選択",
+    "exportDone": "バックアップを保存しました",
+    "importDone": "バックアップを読み込みました — 再起動します",
+    "importWarning": "読み込むと同名のプロフィールが置き換わり、アプリが再起動します。先にブラウザを閉じてください。"
   }
 }

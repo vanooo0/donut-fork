@@ -7,6 +7,7 @@ import Color from "color";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BsCamera, BsMic } from "react-icons/bs";
+import { BackupTransferDialog } from "@/components/backup-transfer-dialog";
 import { DnsBlocklistDialog } from "@/components/dns-blocklist-dialog";
 import { LoadingButton } from "@/components/loading-button";
 import { useTheme } from "@/components/theme-provider";
@@ -121,6 +122,7 @@ export function SettingsDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [isSettingDefault, setIsSettingDefault] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
+  const [showBackupDialog, setShowBackupDialog] = useState(false);
   const [permissions, setPermissions] = useState<PermissionInfo[]>([]);
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
   const [requestingPermission, setRequestingPermission] =
@@ -1300,6 +1302,21 @@ export function SettingsDialog({
               <p className="text-xs text-muted-foreground">
                 {t("settings.advanced.copyLogsDescription")}
               </p>
+
+              <div className="border-t pt-3">
+                <RippleButton
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setShowBackupDialog(true);
+                  }}
+                >
+                  {t("backup.openButton")}
+                </RippleButton>
+                <p className="pt-2 text-xs text-muted-foreground">
+                  {t("backup.settingsHint")}
+                </p>
+              </div>
             </div>
 
             {/* System Info */}
@@ -1449,6 +1466,13 @@ export function SettingsDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BackupTransferDialog
+        isOpen={showBackupDialog}
+        onClose={() => {
+          setShowBackupDialog(false);
+        }}
+      />
     </>
   );
 }

@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "无法验证更新 {{version}}：无法获取其校验和文件。更新未安装，稍后将重试。",
     "updateChecksumMismatch": "下载的更新文件 {{file}} 未通过校验和验证，已被丢弃。请重试。",
     "nameCannotBeEmpty": "名称不能为空",
-    "wayfernVersionNotAvailable": "Wayfern 版本 {{requested}} 无法下载。当前版本为 {{current}}。"
+    "wayfernVersionNotAvailable": "Wayfern 版本 {{requested}} 无法下载。当前版本为 {{current}}。",
+    "backupPasswordRequired": "请输入备份文件的密码。",
+    "backupWriteFailed": "无法写入备份文件。请检查文件夹和磁盘剩余空间。",
+    "backupReadFailed": "无法读取备份文件。",
+    "backupNotABackup": "该文件不是 Donut 备份。",
+    "backupWrongPassword": "此备份文件的密码不正确。",
+    "backupCorrupt": "备份文件已损坏。"
   },
   "rail": {
     "profiles": "配置文件",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "未选择其他 Wayfern 配置文件"
+  },
+  "backup": {
+    "title": "迁移到另一台电脑",
+    "description": "把配置文件、Cookie、标签页、登录信息和代理全部保存到一个加密文件，在另一台电脑加载后即可像没换过设备一样继续使用。",
+    "password": "密码",
+    "passwordPlaceholder": "至少 8 个字符",
+    "passwordHint": "没有这个密码，文件就毫无用处。无人能替你找回，请记好。",
+    "exportButton": "保存到文件",
+    "importButton": "从文件加载",
+    "openButton": "迁移到另一台电脑",
+    "settingsHint": "用一个加密文件迁移全部设置。无需账号，无需服务器。",
+    "saveTitle": "保存备份",
+    "openTitle": "选择备份文件",
+    "exportDone": "备份已保存",
+    "importDone": "备份已加载 — 正在重启",
+    "importWarning": "加载会替换同名配置文件并重启应用。请先关闭浏览器。"
   }
 }

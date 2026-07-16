@@ -5,6 +5,12 @@ import type { TFunction } from "i18next";
  * Keep this list in sync with the codes used in `src-tauri/src/profile/password.rs`.
  */
 export type BackendErrorCode =
+  | "BACKUP_PASSWORD_REQUIRED"
+  | "BACKUP_WRITE_FAILED"
+  | "BACKUP_READ_FAILED"
+  | "BACKUP_NOT_A_BACKUP"
+  | "BACKUP_WRONG_PASSWORD"
+  | "BACKUP_CORRUPT"
   | "INCORRECT_PASSWORD"
   | "LOCKED_OUT"
   | "PROFILE_NOT_FOUND"
@@ -120,6 +126,18 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.groupNotFound");
     case "GROUP_ALREADY_EXISTS":
       return t("backendErrors.groupAlreadyExists");
+    case "BACKUP_PASSWORD_REQUIRED":
+      return t("backendErrors.backupPasswordRequired");
+    case "BACKUP_WRITE_FAILED":
+      return t("backendErrors.backupWriteFailed");
+    case "BACKUP_READ_FAILED":
+      return t("backendErrors.backupReadFailed");
+    case "BACKUP_NOT_A_BACKUP":
+      return t("backendErrors.backupNotABackup");
+    case "BACKUP_WRONG_PASSWORD":
+      return t("backendErrors.backupWrongPassword");
+    case "BACKUP_CORRUPT":
+      return t("backendErrors.backupCorrupt");
     case "NAME_CANNOT_BE_EMPTY":
       return t("backendErrors.nameCannotBeEmpty");
     case "WAYFERN_VERSION_NOT_AVAILABLE":

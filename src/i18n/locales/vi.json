@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "Không thể xác minh bản cập nhật {{version}} vì không thể tải tệp checksum. Bản cập nhật chưa được cài đặt; sẽ thử lại sau.",
     "updateChecksumMismatch": "Tệp cập nhật đã tải xuống {{file}} không vượt qua kiểm tra checksum và đã bị loại bỏ. Vui lòng thử lại.",
     "nameCannotBeEmpty": "Tên không được để trống",
-    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải xuống. Phiên bản hiện tại là {{current}}."
+    "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải xuống. Phiên bản hiện tại là {{current}}.",
+    "backupPasswordRequired": "Hãy nhập mật khẩu cho tệp bản sao.",
+    "backupWriteFailed": "Không ghi được tệp bản sao. Hãy kiểm tra thư mục và dung lượng trống.",
+    "backupReadFailed": "Không đọc được tệp bản sao.",
+    "backupNotABackup": "Tệp này không phải bản sao của Donut.",
+    "backupWrongPassword": "Sai mật khẩu cho tệp bản sao này.",
+    "backupCorrupt": "Tệp bản sao đã hỏng."
   },
   "rail": {
     "profiles": "Profile",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "Chưa chọn profile Wayfern nào khác"
+  },
+  "backup": {
+    "title": "Chuyển sang máy khác",
+    "description": "Lưu mọi thứ — hồ sơ, cookie, thẻ, đăng nhập, proxy — vào một tệp mã hoá, rồi nạp trên máy khác và làm việc như chưa hề đổi máy.",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Tối thiểu 8 ký tự",
+    "passwordHint": "Không có mật khẩu này thì tệp vô dụng. Không ai khôi phục được — hãy ghi lại.",
+    "exportButton": "Lưu ra tệp",
+    "importButton": "Nạp từ tệp",
+    "openButton": "Chuyển sang máy khác",
+    "settingsHint": "Chuyển toàn bộ thiết lập bằng một tệp mã hoá. Không cần tài khoản hay máy chủ.",
+    "saveTitle": "Lưu bản sao",
+    "openTitle": "Chọn tệp bản sao",
+    "exportDone": "Đã lưu bản sao",
+    "importDone": "Đã nạp bản sao — đang khởi động lại",
+    "importWarning": "Việc nạp sẽ thay thế hồ sơ trùng tên và khởi động lại ứng dụng. Hãy đóng trình duyệt trước."
   }
 }

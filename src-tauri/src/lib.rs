@@ -19,6 +19,7 @@ mod api_server;
 mod app_auto_updater;
 pub mod app_dirs;
 mod auto_updater;
+mod backup;
 mod browser;
 mod browser_runner;
 mod browser_version_manager;
@@ -255,6 +256,31 @@ pub(crate) fn wrap_backend_error(e: impl std::fmt::Display, context: &str) -> St
   } else {
     format!("{context}: {msg}")
   }
+}
+
+/// Bundle every profile, proxy, VPN, group, extension and setting into one
+/// password-protected file. Runs on a blocking thread — a large profile set
+/// takes a while to zip and seal, and must not stall the UI.
+#[tauri::command]
+async fn export_backup_file(dest_path: String, password: String) -> Result<(), String> {
+  tokio::task::spawn_blocking(move || {
+    crate::backup::export_backup(std::path::Path::new(&dest_path), &password)
+  })
+  .await
+  .map_err(|e| format!("Backup task failed: {e}"))?
+}
+
+/// Restore a backup file over the current data dir. The caller restarts the
+/// app afterwards (`restart_application`): several managers hold their state
+/// in memory, so a clean reload from disk beats invalidating each cache by
+/// hand.
+#[tauri::command]
+async fn import_backup_file(src_path: String, password: String) -> Result<(), String> {
+  tokio::task::spawn_blocking(move || {
+    crate::backup::import_backup(std::path::Path::new(&src_path), &password)
+  })
+  .await
+  .map_err(|e| format!("Restore task failed: {e}"))?
 }
 
 #[tauri::command]
@@ -2273,6 +2299,8 @@ pub fn run() {
       check_missing_geoip_database,
       ensure_all_binaries_exist,
       ensure_active_browsers_downloaded,
+      export_backup_file,
+      import_backup_file,
       create_stored_proxy,
       get_stored_proxies,
       update_stored_proxy,

@@ -108,48 +108,46 @@
 }
 
 .dark {
-  /* Donut Mono — redesign monochrome palette */
-  --background: #070707;
-  --foreground: #ffffff;
-  --card: #0e0e0e;
-  --card-foreground: #e4e4e4;
-  --popover: #0e0e0e;
-  --popover-foreground: #e4e4e4;
-  --primary: #ffffff;
-  --primary-foreground: #070707;
-  --secondary: #161616;
-  --secondary-foreground: #e4e4e4;
-  --muted: #161616;
-  --muted-foreground: #a0a0a0;
-  --accent: #1f1f1f;
-  --accent-foreground: #ffffff;
-  --destructive: #ec6a5e;
-  --destructive-foreground: #070707;
-  --success: #61c554;
-  --success-foreground: #070707;
-  --warning: #f4be4f;
-  --warning-foreground: #070707;
-  --border: rgba(255, 255, 255, 0.06);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #6b6b6b;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  /* Forest — deep pine surfaces, soft white text. Text is off-white rather
+     than #fff on purpose: pure white on a near-black ground glares. Signal
+     colours stay off the green hue (coral / amber) so they read against the
+     green surfaces; success is a bright mint that outshines them. */
+  --background: #0b1a11;
+  --foreground: #e9f3eb;
+  --card: #11251a;
+  --card-foreground: #ddebe1;
+  --popover: #11251a;
+  --popover-foreground: #ddebe1;
+  --primary: #3fcb6e;
+  --primary-foreground: #06170d;
+  --secondary: #17301f;
+  --secondary-foreground: #ddebe1;
+  --muted: #17301f;
+  --muted-foreground: #94ac9c;
+  --accent: #1e3d28;
+  --accent-foreground: #e9f3eb;
+  --destructive: #ff6b5e;
+  --destructive-foreground: #06170d;
+  --success: #5de89a;
+  --success-foreground: #06170d;
+  --warning: #f5c451;
+  --warning-foreground: #06170d;
+  --border: rgba(233, 243, 235, 0.1);
+  --input: rgba(233, 243, 235, 0.14);
+  --ring: #3fcb6e;
+  --sidebar: #11251a;
+  --sidebar-foreground: #e9f3eb;
+  --sidebar-primary: #3fcb6e;
+  --sidebar-primary-foreground: #06170d;
+  --sidebar-accent: #1e3d28;
+  --sidebar-accent-foreground: #e9f3eb;
+  --sidebar-border: rgba(233, 243, 235, 0.1);
+  --sidebar-ring: #3fcb6e;
+  --chart-1: #4ade80;
+  --chart-2: #2da98c;
+  --chart-3: #8fd694;
+  --chart-4: #1f7a5a;
+  --chart-5: #e9f3eb;
 }
 
 @layer base {

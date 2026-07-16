@@ -35,6 +35,38 @@ export interface Theme {
 
 export const THEMES: Theme[] = [
   {
+    id: "forest",
+    name: "Forest",
+    colors: {
+      "--background": "#0b1a11",
+      "--foreground": "#e9f3eb",
+      "--card": "#11251a",
+      "--card-foreground": "#ddebe1",
+      "--popover": "#11251a",
+      "--popover-foreground": "#ddebe1",
+      "--primary": "#3fcb6e",
+      "--primary-foreground": "#06170d",
+      "--secondary": "#17301f",
+      "--secondary-foreground": "#ddebe1",
+      "--muted": "#17301f",
+      "--muted-foreground": "#94ac9c",
+      "--accent": "#1e3d28",
+      "--accent-foreground": "#e9f3eb",
+      "--destructive": "#ff6b5e",
+      "--destructive-foreground": "#06170d",
+      "--success": "#5de89a",
+      "--success-foreground": "#06170d",
+      "--warning": "#f5c451",
+      "--warning-foreground": "#06170d",
+      "--border": "rgba(233,243,235,0.10)",
+      "--chart-1": "#4ade80",
+      "--chart-2": "#2da98c",
+      "--chart-3": "#8fd694",
+      "--chart-4": "#1f7a5a",
+      "--chart-5": "#e9f3eb",
+    },
+  },
+  {
     id: "donut-mono",
     name: "Donut Mono",
     colors: {

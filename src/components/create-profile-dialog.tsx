@@ -132,6 +132,7 @@ export function CreateProfileDialog({
   // Wayfern anti-detect states
   const [wayfernConfig, setWayfernConfig] = useState<WayfernConfig>(() => ({
     os: getCurrentOS(), // Default to current OS
+    randomize_fingerprint_on_launch: true,
   }));
 
   // Handle browser selection from the initial screen
@@ -450,6 +451,7 @@ export function CreateProfileDialog({
     setReleaseTypesError(null);
     setWayfernConfig({
       os: getCurrentOS(), // Reset to current OS
+      randomize_fingerprint_on_launch: true,
     });
     onClose();
   };
@@ -708,19 +710,6 @@ export function CreateProfileDialog({
                                       ? t("common.buttons.downloading")
                                       : t("common.buttons.download")}
                                   </LoadingButton>
-                                </div>
-                              )}
-                            {!isLoadingReleaseTypes &&
-                              !releaseTypesError &&
-                              !isBrowserCurrentlyDownloading("wayfern") &&
-                              getCreatableVersion("wayfern") && (
-                                <div className="rounded-md border p-3 text-sm text-muted-foreground">
-                                  ✓{" "}
-                                  {t("createProfile.version.available", {
-                                    browser: "Wayfern",
-                                    version:
-                                      getCreatableVersion("wayfern")?.version,
-                                  })}
                                 </div>
                               )}
                             {!isLoadingReleaseTypes &&

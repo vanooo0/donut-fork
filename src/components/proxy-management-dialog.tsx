@@ -578,7 +578,9 @@ export function ProxyManagementDialog({
                   </TooltipContent>
                 </Tooltip>
               ) : null}
-              <span className="truncate font-medium">{proxy.name}</span>
+              <span className="truncate font-medium select-text">
+                {proxy.name}
+              </span>
             </div>
           );
         },
@@ -618,8 +620,8 @@ export function ProxyManagementDialog({
         cell: ({ row }) => {
           const proxy = row.original;
           return (
-            <div className="group/hostport flex min-w-0 items-center gap-1">
-              <span className="truncate font-mono text-xs text-muted-foreground">
+            <div className="flex min-w-0 items-center gap-1">
+              <span className="truncate font-mono text-xs text-muted-foreground select-text">
                 {getProxyHostPort(proxy)}
               </span>
               <Tooltip>
@@ -627,7 +629,7 @@ export function ProxyManagementDialog({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="size-6 shrink-0 p-0 opacity-0 group-hover/hostport:opacity-100 focus-visible:opacity-100"
+                    className="size-6 shrink-0 p-0 text-muted-foreground hover:text-foreground"
                     aria-label={t("common.aria.copy")}
                     onClick={() => {
                       const { host, port, username, password, proxy_type } =

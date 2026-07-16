@@ -1804,7 +1804,13 @@
     "updateChecksumsUnavailable": "Não foi possível verificar a atualização {{version}} porque o arquivo de somas de verificação não pôde ser obtido. A atualização não foi instalada; será tentada novamente mais tarde.",
     "updateChecksumMismatch": "O arquivo de atualização baixado {{file}} falhou na verificação de soma de verificação e foi descartado. Tente novamente.",
     "nameCannotBeEmpty": "O nome não pode estar vazio",
-    "wayfernVersionNotAvailable": "A versão {{requested}} do Wayfern não está disponível para download. A versão atual é {{current}}."
+    "wayfernVersionNotAvailable": "A versão {{requested}} do Wayfern não está disponível para download. A versão atual é {{current}}.",
+    "backupPasswordRequired": "Introduz uma palavra-passe para o ficheiro de cópia.",
+    "backupWriteFailed": "Não foi possível escrever o ficheiro de cópia. Verifica a pasta e o espaço livre em disco.",
+    "backupReadFailed": "Não foi possível ler o ficheiro de cópia.",
+    "backupNotABackup": "Esse ficheiro não é uma cópia do Donut.",
+    "backupWrongPassword": "Palavra-passe incorreta para este ficheiro de cópia.",
+    "backupCorrupt": "O ficheiro de cópia está danificado."
   },
   "rail": {
     "profiles": "Perfis",
@@ -2022,5 +2028,21 @@
   },
   "cookieCopy": {
     "noOtherTargets": "Nenhum outro perfil Wayfern selecionado"
+  },
+  "backup": {
+    "title": "Mover para outro computador",
+    "description": "Guarda tudo — perfis, cookies, separadores, logins, proxies — num único ficheiro encriptado e carrega-o noutro computador para continuar como se nada tivesse mudado.",
+    "password": "Palavra-passe",
+    "passwordPlaceholder": "Pelo menos 8 caracteres",
+    "passwordHint": "O ficheiro é inútil sem esta palavra-passe. Ninguém a consegue recuperar por ti — anota-a.",
+    "exportButton": "Guardar em ficheiro",
+    "importButton": "Carregar de ficheiro",
+    "openButton": "Mover para outro computador",
+    "settingsHint": "Transfere toda a tua configuração com um ficheiro encriptado. Sem conta nem servidor.",
+    "saveTitle": "Guardar cópia",
+    "openTitle": "Escolher ficheiro de cópia",
+    "exportDone": "Cópia guardada",
+    "importDone": "Cópia carregada — a reiniciar",
+    "importWarning": "Carregar substitui perfis com o mesmo nome e reinicia a app. Fecha primeiro os navegadores."
   }
 }

@@ -66,6 +66,11 @@ Includes comprehensive unit tests for:
 
 use crate::events;
 use reqwest::Client;
+
+/// This build is a personal fork, so it must never install an upstream Donut
+/// release over itself — doing so would replace every local change without
+/// warning. Flipping this to `false` restores the stock updater.
+const FORK_SELF_UPDATE_DISABLED: bool = true;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
@@ -1943,6 +1948,15 @@ rm "{}"
 
 #[tauri::command]
 pub async fn check_for_app_updates() -> Result<Option<AppUpdateInfo>, String> {
+  // Personal fork: self-updates are permanently off. The updater installs
+  // upstream Donut releases, which would overwrite this build and silently
+  // take every local change with it. Not gated on a setting on purpose —
+  // an existing install already has the setting saved as false.
+  if FORK_SELF_UPDATE_DISABLED {
+    log::info!("App self-updates are disabled in this fork build");
+    return Ok(None);
+  }
+
   if crate::app_dirs::is_portable() {
     log::info!("App auto-updates disabled in portable mode");
     return Ok(None);
@@ -1996,6 +2010,11 @@ pub async fn restart_application() -> Result<(), String> {
 
 #[tauri::command]
 pub async fn check_for_app_updates_manual() -> Result<Option<AppUpdateInfo>, String> {
+  if FORK_SELF_UPDATE_DISABLED {
+    log::info!("Manual app update check ignored: self-updates disabled in this fork build");
+    return Ok(None);
+  }
+
   log::info!("Manual app update check triggered");
   let updater = AppAutoUpdater::instance();
   updater

@@ -81,7 +81,15 @@ pub fn hash_file(path: &Path) -> Result<String, String> {
     }
     hasher.update(&buf[..n]);
   }
-  Ok(format!("{:x}", hasher.finalize()))
+  // This sha2 release returns a digest that doesn't implement LowerHex, so
+  // build the hex string by hand — same as the self-updater does.
+  let digest = hasher.finalize();
+  let mut hex = String::with_capacity(digest.len() * 2);
+  for byte in digest {
+    use std::fmt::Write;
+    let _ = write!(hex, "{byte:02x}");
+  }
+  Ok(hex)
 }
 
 /// Outcome of checking a freshly downloaded archive against the pin store.

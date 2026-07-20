@@ -1790,7 +1790,9 @@
     "backupReadFailed": "Không đọc được tệp bản sao.",
     "backupNotABackup": "Tệp này không phải bản sao của Donut.",
     "backupWrongPassword": "Sai mật khẩu cho tệp bản sao này.",
-    "backupCorrupt": "Tệp bản sao đã hỏng."
+    "backupCorrupt": "Tệp bản sao đã hỏng.",
+    "downloadInsecureUrl": "Bản tải trình duyệt được cung cấp qua kết nối không an toàn nên đã bị từ chối. Đừng tiếp tục — tệp có thể đã bị can thiệp.",
+    "downloadHashMismatch": "Trình duyệt vừa tải không khớp với bản mà máy này từng tin cậy. Nó đã bị từ chối và xoá. Đừng cài đặt — máy chủ tải xuống có thể đã bị xâm nhập."
   },
   "rail": {
     "profiles": "Profile",

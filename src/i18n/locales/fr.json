@@ -1790,7 +1790,9 @@
     "backupReadFailed": "Impossible de lire le fichier de sauvegarde.",
     "backupNotABackup": "Ce fichier n'est pas une sauvegarde Donut.",
     "backupWrongPassword": "Mot de passe incorrect pour ce fichier de sauvegarde.",
-    "backupCorrupt": "Le fichier de sauvegarde est endommagé."
+    "backupCorrupt": "Le fichier de sauvegarde est endommagé.",
+    "downloadInsecureUrl": "Le téléchargement du navigateur a été proposé via une connexion non sécurisée et a été refusé. Ne continue pas : le fichier a peut-être été altéré.",
+    "downloadHashMismatch": "Le navigateur téléchargé ne correspond pas à la copie que cet ordinateur avait validée. Il a été refusé et supprimé. Ne l'installe pas : le serveur de téléchargement a peut-être été compromis."
   },
   "rail": {
     "profiles": "Profils",

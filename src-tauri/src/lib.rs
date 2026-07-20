@@ -25,6 +25,7 @@ mod browser_runner;
 mod browser_version_manager;
 mod default_browser;
 pub mod dns_blocklist;
+mod download_pinning;
 mod downloaded_browsers_registry;
 mod downloader;
 mod ephemeral_dirs;

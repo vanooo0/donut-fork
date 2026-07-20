@@ -1790,7 +1790,9 @@
     "backupReadFailed": "No se pudo leer el archivo de copia.",
     "backupNotABackup": "Ese archivo no es una copia de Donut.",
     "backupWrongPassword": "Contraseña incorrecta para este archivo de copia.",
-    "backupCorrupt": "El archivo de copia está dañado."
+    "backupCorrupt": "El archivo de copia está dañado.",
+    "downloadInsecureUrl": "La descarga del navegador se ofreció por una conexión insegura y fue rechazada. No continúes: puede significar que el archivo fue manipulado.",
+    "downloadHashMismatch": "El navegador descargado no coincide con la copia en la que este equipo confiaba antes. Se rechazó y se eliminó. No lo instales: puede significar que el servidor de descargas fue comprometido."
   },
   "rail": {
     "profiles": "Perfiles",

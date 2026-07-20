@@ -1790,7 +1790,9 @@
     "backupReadFailed": "Não foi possível ler o ficheiro de cópia.",
     "backupNotABackup": "Esse ficheiro não é uma cópia do Donut.",
     "backupWrongPassword": "Palavra-passe incorreta para este ficheiro de cópia.",
-    "backupCorrupt": "O ficheiro de cópia está danificado."
+    "backupCorrupt": "O ficheiro de cópia está danificado.",
+    "downloadInsecureUrl": "A transferência do navegador foi oferecida por uma ligação insegura e foi recusada. Não continues: pode significar que o ficheiro foi adulterado.",
+    "downloadHashMismatch": "O navegador transferido não corresponde à cópia em que este computador confiava antes. Foi recusado e apagado. Não o instales: pode significar que o servidor de transferências foi comprometido."
   },
   "rail": {
     "profiles": "Perfis",

@@ -34,6 +34,9 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 #master
         with:
+          # Pinning the action to a SHA drops the toolchain that the @stable
+          # ref used to imply, so name it explicitly.
+          toolchain: stable
           targets: x86_64-pc-windows-msvc
 
       - name: Rust cache

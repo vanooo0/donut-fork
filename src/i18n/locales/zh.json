@@ -1790,7 +1790,9 @@
     "backupReadFailed": "无法读取备份文件。",
     "backupNotABackup": "该文件不是 Donut 备份。",
     "backupWrongPassword": "此备份文件的密码不正确。",
-    "backupCorrupt": "备份文件已损坏。"
+    "backupCorrupt": "备份文件已损坏。",
+    "downloadInsecureUrl": "浏览器下载通过不安全的连接提供，已被拒绝。请勿继续——文件可能已被篡改。",
+    "downloadHashMismatch": "下载的浏览器与本机此前信任的副本不一致，已被拒绝并删除。请勿安装——下载服务器可能已被入侵。"
   },
   "rail": {
     "profiles": "配置文件",

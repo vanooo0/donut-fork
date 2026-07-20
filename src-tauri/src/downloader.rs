@@ -629,6 +629,11 @@ impl Downloader {
       .get_download_info(&browser_str, &version)
       .map_err(|e| format!("Failed to get download info: {e}"))?;
 
+    // The download URL comes from a remote manifest, so refuse a plaintext
+    // one — otherwise a hijacked manifest could have the build swapped in
+    // transit by anyone on the network path.
+    crate::download_pinning::ensure_https(&download_info.url)?;
+
     // Create browser directory
     let mut browser_dir = binaries_dir.clone();
     browser_dir.push(&browser_str);
@@ -685,6 +690,43 @@ impl Downloader {
         return Err(format!("Failed to download browser: {e}").into());
       }
     };
+
+    // Upstream publishes no checksum for the browser build, so pin the bytes
+    // on first sight and refuse them if they ever change for the same
+    // version. Runs before extraction — a swapped archive must never be
+    // unpacked, let alone executed.
+    match crate::download_pinning::verify_or_pin(
+      &browser_str,
+      &version,
+      &download_info.filename,
+      &download_path,
+    ) {
+      Ok(crate::download_pinning::PinCheck::Pinned(hash)) => {
+        log::info!("Pinned {browser_str} {version} archive SHA-256 {hash}");
+      }
+      Ok(crate::download_pinning::PinCheck::Matched(hash)) => {
+        log::info!("Verified {browser_str} {version} archive against pinned SHA-256 {hash}");
+      }
+      Err(e) => {
+        log::error!("Refusing {browser_str} {version}: archive failed hash check: {e}");
+        let _ = std::fs::remove_file(&download_path);
+        let _ = self.registry.remove_browser(&browser_str, &version);
+        let _ = self.registry.save();
+
+        let progress = DownloadProgress {
+          browser: browser_str.clone(),
+          version: version.clone(),
+          downloaded_bytes: 0,
+          total_bytes: None,
+          percentage: 0.0,
+          speed_bytes_per_sec: 0.0,
+          eta_seconds: None,
+          stage: "error".to_string(),
+        };
+        let _ = events::emit("download-progress", &progress);
+        return Err(e.into());
+      }
+    }
 
     // Use the extraction module
     if download_info.is_archive {

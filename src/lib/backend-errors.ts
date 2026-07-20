@@ -5,6 +5,8 @@ import type { TFunction } from "i18next";
  * Keep this list in sync with the codes used in `src-tauri/src/profile/password.rs`.
  */
 export type BackendErrorCode =
+  | "DOWNLOAD_INSECURE_URL"
+  | "DOWNLOAD_HASH_MISMATCH"
   | "BACKUP_PASSWORD_REQUIRED"
   | "BACKUP_WRITE_FAILED"
   | "BACKUP_READ_FAILED"
@@ -126,6 +128,10 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.groupNotFound");
     case "GROUP_ALREADY_EXISTS":
       return t("backendErrors.groupAlreadyExists");
+    case "DOWNLOAD_INSECURE_URL":
+      return t("backendErrors.downloadInsecureUrl");
+    case "DOWNLOAD_HASH_MISMATCH":
+      return t("backendErrors.downloadHashMismatch");
     case "BACKUP_PASSWORD_REQUIRED":
       return t("backendErrors.backupPasswordRequired");
     case "BACKUP_WRITE_FAILED":

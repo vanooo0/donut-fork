@@ -1790,7 +1790,9 @@
     "backupReadFailed": "Could not read the backup file.",
     "backupNotABackup": "That file is not a Donut backup.",
     "backupWrongPassword": "Wrong password for this backup file.",
-    "backupCorrupt": "The backup file is damaged."
+    "backupCorrupt": "The backup file is damaged.",
+    "downloadInsecureUrl": "The browser download was offered over an insecure connection and was refused. Do not continue — this can mean the download was tampered with.",
+    "downloadHashMismatch": "The downloaded browser does not match the copy this computer trusted earlier. It was rejected and deleted. Do not install it — this can mean the download server was compromised."
   },
   "rail": {
     "profiles": "Profiles",

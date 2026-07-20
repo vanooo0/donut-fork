@@ -1792,7 +1792,8 @@
     "backupWrongPassword": "Sai mật khẩu cho tệp bản sao này.",
     "backupCorrupt": "Tệp bản sao đã hỏng.",
     "downloadInsecureUrl": "Bản tải trình duyệt được cung cấp qua kết nối không an toàn nên đã bị từ chối. Đừng tiếp tục — tệp có thể đã bị can thiệp.",
-    "downloadHashMismatch": "Trình duyệt vừa tải không khớp với bản mà máy này từng tin cậy. Nó đã bị từ chối và xoá. Đừng cài đặt — máy chủ tải xuống có thể đã bị xâm nhập."
+    "downloadHashMismatch": "Trình duyệt vừa tải không khớp với bản mà máy này từng tin cậy. Nó đã bị từ chối và xoá. Đừng cài đặt — máy chủ tải xuống có thể đã bị xâm nhập.",
+    "browserNotVerifiedBuild": "Bản dựng trình duyệt này không phải bản đã được xác minh. Nó đã bị từ chối và xoá. Đừng cài đặt — máy chủ tải xuống có thể đang phát một trình duyệt đã bị sửa đổi."
   },
   "rail": {
     "profiles": "Profile",

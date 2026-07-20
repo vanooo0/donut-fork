@@ -1792,7 +1792,8 @@
     "backupWrongPassword": "Wrong password for this backup file.",
     "backupCorrupt": "The backup file is damaged.",
     "downloadInsecureUrl": "The browser download was offered over an insecure connection and was refused. Do not continue — this can mean the download was tampered with.",
-    "downloadHashMismatch": "The downloaded browser does not match the copy this computer trusted earlier. It was rejected and deleted. Do not install it — this can mean the download server was compromised."
+    "downloadHashMismatch": "The downloaded browser does not match the copy this computer trusted earlier. It was rejected and deleted. Do not install it — this can mean the download server was compromised.",
+    "browserNotVerifiedBuild": "This browser build is not the verified one. It was rejected and removed. Do not install it — the download server may be serving a modified browser."
   },
   "rail": {
     "profiles": "Profiles",

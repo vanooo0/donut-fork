@@ -1792,7 +1792,8 @@
     "backupWrongPassword": "Palavra-passe incorreta para este ficheiro de cópia.",
     "backupCorrupt": "O ficheiro de cópia está danificado.",
     "downloadInsecureUrl": "A transferência do navegador foi oferecida por uma ligação insegura e foi recusada. Não continues: pode significar que o ficheiro foi adulterado.",
-    "downloadHashMismatch": "O navegador transferido não corresponde à cópia em que este computador confiava antes. Foi recusado e apagado. Não o instales: pode significar que o servidor de transferências foi comprometido."
+    "downloadHashMismatch": "O navegador transferido não corresponde à cópia em que este computador confiava antes. Foi recusado e apagado. Não o instales: pode significar que o servidor de transferências foi comprometido.",
+    "browserNotVerifiedBuild": "Esta versão do navegador não é a verificada. Foi recusada e removida. Não a instales: o servidor de transferências pode estar a fornecer um navegador modificado."
   },
   "rail": {
     "profiles": "Perfis",

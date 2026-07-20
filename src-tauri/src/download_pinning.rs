@@ -92,6 +92,64 @@ pub fn hash_file(path: &Path) -> Result<String, String> {
   Ok(hex)
 }
 
+/// Executable hashes confirmed good out-of-band: cross-checked byte-for-byte
+/// across two independently downloaded installs and submitted to VirusTotal
+/// (0/69 vendors, and the file was already known there, so it is not a build
+/// made for one target). The browser ships unsigned, so this table is the
+/// only way a *fresh* machine can tell the real build from a substitute —
+/// trust-on-first-use alone would happily pin whatever it was handed first.
+///
+/// `(browser, version, executable file name)` -> lowercase hex SHA-256.
+/// A version missing from this table is not an error; it falls back to
+/// trust-on-first-use. Add an entry only after verifying a build the same way.
+const KNOWN_GOOD_EXECUTABLES: &[(&str, &str, &str, &str)] = &[(
+  "wayfern",
+  "149.0.7827.116",
+  "chrome.exe",
+  "c24aab659c0712f3fd2a5bb8e148f403b6838c452abb0cd055affcfbe0497506",
+)];
+
+/// Check an extracted executable against the known-good table.
+///
+/// `Ok(true)` — matched a known-good hash. `Ok(false)` — this version isn't in
+/// the table, nothing to compare against. `Err` — the version IS known and the
+/// bytes differ, which means the build is not the one that was verified.
+pub fn verify_known_good_executable(
+  browser: &str,
+  version: &str,
+  executable: &Path,
+) -> Result<bool, String> {
+  let Some(file_name) = executable.file_name().and_then(|n| n.to_str()) else {
+    return Ok(false);
+  };
+
+  let Some((_, _, _, expected)) = KNOWN_GOOD_EXECUTABLES.iter().find(|(b, v, f, _)| {
+    b.eq_ignore_ascii_case(browser)
+      && *v == version
+      && f.eq_ignore_ascii_case(file_name)
+  }) else {
+    return Ok(false);
+  };
+
+  let actual = hash_file(executable)?;
+  if actual.eq_ignore_ascii_case(expected) {
+    return Ok(true);
+  }
+
+  Err(
+    serde_json::json!({
+      "code": "BROWSER_NOT_VERIFIED_BUILD",
+      "params": {
+        "browser": browser,
+        "version": version,
+        "expected": expected.to_string(),
+        "actual": actual
+      }
+    })
+    .to_string(),
+  )
+}
+
 /// Outcome of checking a freshly downloaded archive against the pin store.
 pub enum PinCheck {
   /// First time this version was seen; the hash is now recorded.

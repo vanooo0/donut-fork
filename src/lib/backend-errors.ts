@@ -5,6 +5,7 @@ import type { TFunction } from "i18next";
  * Keep this list in sync with the codes used in `src-tauri/src/profile/password.rs`.
  */
 export type BackendErrorCode =
+  | "BROWSER_NOT_VERIFIED_BUILD"
   | "DOWNLOAD_INSECURE_URL"
   | "DOWNLOAD_HASH_MISMATCH"
   | "BACKUP_PASSWORD_REQUIRED"
@@ -128,6 +129,8 @@ export function translateBackendError(t: TFunction, err: unknown): string {
       return t("backendErrors.groupNotFound");
     case "GROUP_ALREADY_EXISTS":
       return t("backendErrors.groupAlreadyExists");
+    case "BROWSER_NOT_VERIFIED_BUILD":
+      return t("backendErrors.browserNotVerifiedBuild");
     case "DOWNLOAD_INSECURE_URL":
       return t("backendErrors.downloadInsecureUrl");
     case "DOWNLOAD_HASH_MISMATCH":

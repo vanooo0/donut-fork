@@ -1792,7 +1792,8 @@
     "backupWrongPassword": "Mot de passe incorrect pour ce fichier de sauvegarde.",
     "backupCorrupt": "Le fichier de sauvegarde est endommagé.",
     "downloadInsecureUrl": "Le téléchargement du navigateur a été proposé via une connexion non sécurisée et a été refusé. Ne continue pas : le fichier a peut-être été altéré.",
-    "downloadHashMismatch": "Le navigateur téléchargé ne correspond pas à la copie que cet ordinateur avait validée. Il a été refusé et supprimé. Ne l'installe pas : le serveur de téléchargement a peut-être été compromis."
+    "downloadHashMismatch": "Le navigateur téléchargé ne correspond pas à la copie que cet ordinateur avait validée. Il a été refusé et supprimé. Ne l'installe pas : le serveur de téléchargement a peut-être été compromis.",
+    "browserNotVerifiedBuild": "Cette version du navigateur n'est pas celle qui a été vérifiée. Elle a été refusée et supprimée. Ne l'installe pas : le serveur de téléchargement fournit peut-être un navigateur modifié."
   },
   "rail": {
     "profiles": "Profils",

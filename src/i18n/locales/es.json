@@ -1792,7 +1792,8 @@
     "backupWrongPassword": "Contraseña incorrecta para este archivo de copia.",
     "backupCorrupt": "El archivo de copia está dañado.",
     "downloadInsecureUrl": "La descarga del navegador se ofreció por una conexión insegura y fue rechazada. No continúes: puede significar que el archivo fue manipulado.",
-    "downloadHashMismatch": "El navegador descargado no coincide con la copia en la que este equipo confiaba antes. Se rechazó y se eliminó. No lo instales: puede significar que el servidor de descargas fue comprometido."
+    "downloadHashMismatch": "El navegador descargado no coincide con la copia en la que este equipo confiaba antes. Se rechazó y se eliminó. No lo instales: puede significar que el servidor de descargas fue comprometido.",
+    "browserNotVerifiedBuild": "Esta versión del navegador no es la verificada. Se rechazó y se eliminó. No la instales: el servidor de descargas podría estar entregando un navegador modificado."
   },
   "rail": {
     "profiles": "Perfiles",

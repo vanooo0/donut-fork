@@ -840,6 +840,38 @@ impl Downloader {
       return Err(error_details.into());
     }
 
+    // The browser ships unsigned, so for versions whose bytes were verified
+    // out-of-band, compare the extracted executable against the known-good
+    // hash. Unknown versions fall through to the archive pin above.
+    if let Ok(exe_path) = browser.get_executable_path(&browser_dir) {
+      match crate::download_pinning::verify_known_good_executable(&browser_str, &version, &exe_path)
+      {
+        Ok(true) => log::info!("{browser_str} {version} matches the known-good executable hash"),
+        Ok(false) => log::info!(
+          "{browser_str} {version} has no known-good hash on record; relying on the archive pin"
+        ),
+        Err(e) => {
+          log::error!("Refusing {browser_str} {version}: executable is not the verified build: {e}");
+          let _ = std::fs::remove_dir_all(&browser_dir);
+          let _ = self.registry.remove_browser(&browser_str, &version);
+          let _ = self.registry.save();
+
+          let progress = DownloadProgress {
+            browser: browser_str.clone(),
+            version: version.clone(),
+            downloaded_bytes: 0,
+            total_bytes: None,
+            percentage: 0.0,
+            speed_bytes_per_sec: 0.0,
+            eta_seconds: None,
+            stage: "error".to_string(),
+          };
+          let _ = events::emit("download-progress", &progress);
+          return Err(e.into());
+        }
+      }
+    }
+
     // Mark completion in registry - only now add to registry after verification
     if let Err(e) =
       self

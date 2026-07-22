@@ -518,20 +518,21 @@ async fn connect_via_socks(
 
   if is_socks5 {
     // Hand-rolled RFC1928/1929 SOCKS5 client. Written out rather than delegated
-    // to a crate so we control exactly what goes on the wire: the greeting
-    // offers no-auth AND username/password (like curl), and when the upstream
-    // selects user/pass we send RFC1929 credentials — the earlier crate path
-    // was dropping auth against some upstreams, so an authed SOCKS5 proxy would
-    // not route in the browser even though curl socks5h worked. Each SOCKS
-    // message is one write, so there's no fragmented-auth problem to buffer
-    // around. Domains are sent as-is (ATYP=domain) for proxy-side DNS (socks5h).
+    // to a crate so we control exactly what goes on the wire. When we have
+    // credentials we offer ONLY username/password (0x02): if we also offered
+    // no-auth, an auth-required upstream can select no-auth, we'd skip the
+    // login, and the proxy then stalls the CONNECT — the "any site hangs"
+    // symptom. Offering only 0x02 forces authentication, like curl under
+    // -x socks5h://user:pass@. Each SOCKS message is one write, and domains
+    // are sent as ATYP=domain for proxy-side DNS (socks5h).
     let mut stream = stream;
     let _ = stream.set_nodelay(true);
+    let has_auth = auth.is_some();
 
     let handshake = tokio::time::timeout(UPSTREAM_DIAL_TIMEOUT, async {
-      // Greeting.
-      let greeting: &[u8] = if auth.is_some() {
-        &[0x05, 0x02, 0x00, 0x02]
+      // Greeting: only user/pass when we have creds, else only no-auth.
+      let greeting: &[u8] = if has_auth {
+        &[0x05, 0x01, 0x02]
       } else {
         &[0x05, 0x01, 0x00]
       };
@@ -542,8 +543,16 @@ async fn connect_via_socks(
       if sel[0] != 0x05 {
         return Err(err_box("SOCKS5 upstream: bad version in method reply"));
       }
+      log::info!(
+        "[socks5-upstream] {socks_addr} selected auth method {:#04x} (offered {})",
+        sel[1],
+        if has_auth { "user/pass" } else { "no-auth" }
+      );
       match sel[1] {
-        0x00 => {}
+        // No-auth is only acceptable when we weren't trying to authenticate;
+        // if we have creds and the proxy answers no-auth, treat it as an
+        // error rather than routing unauthenticated.
+        0x00 if !has_auth => {}
         0x02 => {
           let (user, pass) = auth.ok_or_else(|| {
             err_box("SOCKS5 upstream requires a login but none is configured")

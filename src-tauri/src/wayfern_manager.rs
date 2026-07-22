@@ -693,6 +693,9 @@ impl WayfernManager {
     extension_paths: &[String],
     remote_debugging_port: Option<u16>,
     headless: bool,
+    // False when the exit proxy can't carry UDP (HTTP/HTTPS/SS upstream), so
+    // QUIC is disabled and the browser uses TCP through the CONNECT tunnel.
+    upstream_can_udp: bool,
   ) -> Result<WayfernLaunchResult, Box<dyn std::error::Error + Send + Sync>> {
     let executable_path = BrowserRunner::instance()
       .get_browser_executable_path(profile)
@@ -939,6 +942,18 @@ impl WayfernManager {
       );
       args.push(format!("--proxy-pac-url={pac_data}"));
       args.push("--dns-prefetch-disable".to_string());
+    }
+
+    if !upstream_can_udp {
+      // The exit proxy can't carry UDP, so QUIC/HTTP3 (which is UDP) can never
+      // work through it, and the local SOCKS5 worker refuses its UDP ASSOCIATE
+      // to avoid leaking the real IP. Chromium then hard-fails QUIC-preferring
+      // sites (e.g. checkout.stripe.com) with ERR_SOCKS_CONNECTION_FAILED
+      // instead of falling back to TCP. Force TCP so those sites load through
+      // the HTTP CONNECT tunnel. No fingerprint cost: the proxy blocks UDP
+      // either way, so the browser is already TCP-only — this just removes the
+      // failed QUIC attempt.
+      args.push("--disable-quic".to_string());
     }
 
     let mut command = TokioCommand::new(&executable_path);
@@ -1426,6 +1441,7 @@ impl WayfernManager {
         &[],
         None,
         false,
+        true,
       )
       .await
   }

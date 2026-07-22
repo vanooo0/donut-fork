@@ -438,6 +438,14 @@ impl BrowserRunner {
       // Get proxy URL from config
       let proxy_url = wayfern_config.proxy.as_deref();
 
+      // Only SOCKS5 upstreams (and our VPN worker, exposed as SOCKS5) can carry
+      // UDP; direct has no proxy in the way. For HTTP/HTTPS/SS upstreams QUIC
+      // can't work, so Wayfern disables it and uses TCP.
+      let upstream_can_udp = match upstream_proxy.as_ref() {
+        None => true,
+        Some(p) => matches!(p.proxy_type.as_str(), "socks5"),
+      };
+
       let wayfern_result = self
         .wayfern_manager
         .launch_wayfern(
@@ -451,6 +459,7 @@ impl BrowserRunner {
           &extension_paths,
           remote_debugging_port,
           headless,
+          upstream_can_udp,
         )
         .await
         .map_err(|e| -> Box<dyn std::error::Error + Send + Sync> {

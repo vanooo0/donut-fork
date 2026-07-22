@@ -430,9 +430,9 @@ fn upstream_userpass(upstream: &Url) -> (String, String) {
 }
 
 /// Transparent AsyncRead/AsyncWrite wrapper that logs every read/write
-/// byte of the SOCKS5 handshake. Used only during the handshake — the
-/// inner stream is taken back via `into_inner` once the handshake
-/// completes, so the tunnel phase pays no overhead
+/// byte of the SOCKS5 handshake. Kept for ad-hoc debugging; the SOCKS5 client
+/// now hand-rolls its handshake and no longer wraps the stream in this.
+#[allow(dead_code)]
 struct SocksHandshakeLogger<S> {
   inner: S,
   label: String,
@@ -501,6 +501,10 @@ impl<S: AsyncWrite + Unpin> AsyncWrite for SocksHandshakeLogger<S> {
   }
 }
 
+fn err_box(msg: impl Into<String>) -> Box<dyn std::error::Error> {
+  Box::<dyn std::error::Error>::from(msg.into())
+}
+
 async fn connect_via_socks(
   socks_addr: &str,
   target_host: &str,
@@ -513,63 +517,133 @@ async fn connect_via_socks(
     .map_err(|_| format!("SOCKS upstream connect to {socks_addr} timed out"))??;
 
   if is_socks5 {
-    // SOCKS5 connection using async_socks5
-    use async_socks5::{connect, AddrKind, Auth};
-
-    let target = if let Ok(ip) = target_host.parse::<std::net::IpAddr>() {
-      AddrKind::Ip(std::net::SocketAddr::new(ip, target_port))
-    } else {
-      AddrKind::Domain(target_host.to_string(), target_port)
-    };
-
-    let auth_info: Option<Auth> = auth.map(|(user, pass)| Auth {
-      username: user.to_string(),
-      password: pass.to_string(),
-    });
-
-    let has_auth = auth_info.is_some();
-    log::trace!(
-      "[socks-handshake] dialing {} (target={}:{}, has_auth={})",
-      socks_addr,
-      target_host,
-      target_port,
-      has_auth
-    );
-
-    // Disable Nagle so the kernel doesn't further delay/coalesce the
-    // syscalls issued when BufStream flushes
+    // Hand-rolled RFC1928/1929 SOCKS5 client. Written out rather than delegated
+    // to a crate so we control exactly what goes on the wire: the greeting
+    // offers no-auth AND username/password (like curl), and when the upstream
+    // selects user/pass we send RFC1929 credentials — the earlier crate path
+    // was dropping auth against some upstreams, so an authed SOCKS5 proxy would
+    // not route in the browser even though curl socks5h worked. Each SOCKS
+    // message is one write, so there's no fragmented-auth problem to buffer
+    // around. Domains are sent as-is (ATYP=domain) for proxy-side DNS (socks5h).
+    let mut stream = stream;
     let _ = stream.set_nodelay(true);
 
-    // BufStream wrapping is required: async_socks5 calls write_u8 for every
-    // single-byte SOCKS5 / RFC1929 field, and on a raw TcpStream each call
-    // becomes its own TCP segment. Some upstream SOCKS5 implementations
-    // treat such a "fragmented auth submission" as a misbehaving client
-    // and silently FIN instead of returning an RFC1929 status. BufStream
-    // coalesces those small writes into one syscall on flush — this is
-    // the usage pattern shown in the async_socks5 README
-    let label = format!("{socks_addr}->{target_host}:{target_port}");
-    let logged = SocksHandshakeLogger::new(stream, label);
-    let mut buffered = tokio::io::BufStream::new(logged);
-    let handshake = tokio::time::timeout(
-      UPSTREAM_DIAL_TIMEOUT,
-      connect(&mut buffered, target, auth_info),
-    )
+    let handshake = tokio::time::timeout(UPSTREAM_DIAL_TIMEOUT, async {
+      // Greeting.
+      let greeting: &[u8] = if auth.is_some() {
+        &[0x05, 0x02, 0x00, 0x02]
+      } else {
+        &[0x05, 0x01, 0x00]
+      };
+      stream.write_all(greeting).await?;
+
+      let mut sel = [0u8; 2];
+      stream.read_exact(&mut sel).await?;
+      if sel[0] != 0x05 {
+        return Err(err_box("SOCKS5 upstream: bad version in method reply"));
+      }
+      match sel[1] {
+        0x00 => {}
+        0x02 => {
+          let (user, pass) = auth.ok_or_else(|| {
+            err_box("SOCKS5 upstream requires a login but none is configured")
+          })?;
+          let (ub, pb) = (user.as_bytes(), pass.as_bytes());
+          if ub.len() > 255 || pb.len() > 255 {
+            return Err(err_box("SOCKS5 username/password too long"));
+          }
+          let mut req = Vec::with_capacity(3 + ub.len() + pb.len());
+          req.push(0x01);
+          req.push(ub.len() as u8);
+          req.extend_from_slice(ub);
+          req.push(pb.len() as u8);
+          req.extend_from_slice(pb);
+          stream.write_all(&req).await?;
+
+          let mut st = [0u8; 2];
+          stream.read_exact(&mut st).await?;
+          if st[1] != 0x00 {
+            return Err(err_box("SOCKS5 upstream rejected the username/password"));
+          }
+        }
+        0xFF => {
+          return Err(err_box(
+            "SOCKS5 upstream offered no acceptable auth method (does it need a login?)",
+          ))
+        }
+        other => {
+          return Err(err_box(format!(
+            "SOCKS5 upstream selected unsupported auth method {other:#04x}"
+          )))
+        }
+      }
+
+      // CONNECT request.
+      let mut req = vec![0x05u8, 0x01, 0x00];
+      match target_host.parse::<std::net::IpAddr>() {
+        Ok(std::net::IpAddr::V4(v4)) => {
+          req.push(0x01);
+          req.extend_from_slice(&v4.octets());
+        }
+        Ok(std::net::IpAddr::V6(v6)) => {
+          req.push(0x04);
+          req.extend_from_slice(&v6.octets());
+        }
+        Err(_) => {
+          let host = target_host.as_bytes();
+          if host.len() > 255 {
+            return Err(err_box("SOCKS5 target host too long"));
+          }
+          req.push(0x03);
+          req.push(host.len() as u8);
+          req.extend_from_slice(host);
+        }
+      }
+      req.extend_from_slice(&target_port.to_be_bytes());
+      stream.write_all(&req).await?;
+
+      // Reply: VER REP RSV ATYP BND.ADDR BND.PORT — consume the bound address
+      // so the stream is left positioned exactly at the tunnel payload.
+      let mut head = [0u8; 4];
+      stream.read_exact(&mut head).await?;
+      if head[0] != 0x05 {
+        return Err(err_box("SOCKS5 upstream: bad version in connect reply"));
+      }
+      if head[1] != 0x00 {
+        return Err(err_box(format!(
+          "SOCKS5 upstream refused CONNECT (reply {:#04x})",
+          head[1]
+        )));
+      }
+      match head[3] {
+        0x01 => {
+          let mut a = [0u8; 4 + 2];
+          stream.read_exact(&mut a).await?;
+        }
+        0x04 => {
+          let mut a = [0u8; 16 + 2];
+          stream.read_exact(&mut a).await?;
+        }
+        0x03 => {
+          let mut l = [0u8; 1];
+          stream.read_exact(&mut l).await?;
+          let mut a = vec![0u8; l[0] as usize + 2];
+          stream.read_exact(&mut a).await?;
+        }
+        other => {
+          return Err(err_box(format!(
+            "SOCKS5 upstream: unknown address type {other:#04x} in reply"
+          )))
+        }
+      }
+      Ok::<(), Box<dyn std::error::Error>>(())
+    })
     .await;
-    // Unwrap the layered stream: BufStream → SocksHandshakeLogger → TcpStream
-    let stream = buffered.into_inner().into_inner();
+
     match handshake {
-      Ok(Ok(_)) => {
-        log::trace!("[socks-handshake] handshake completed ok");
-        Ok(stream)
-      }
-      Ok(Err(e)) => {
-        log::trace!("[socks-handshake] handshake failed: {:?}", e);
-        Err(e.into())
-      }
-      Err(_) => {
-        log::trace!("[socks-handshake] handshake timed out");
-        Err("SOCKS5 upstream handshake timed out".into())
-      }
+      Ok(Ok(())) => Ok(stream),
+      Ok(Err(e)) => Err(e),
+      Err(_) => Err("SOCKS5 upstream handshake timed out".into()),
     }
   } else {
     let mut stream = stream;

@@ -438,12 +438,18 @@ impl BrowserRunner {
       // Get proxy URL from config
       let proxy_url = wayfern_config.proxy.as_deref();
 
-      // Only SOCKS5 upstreams (and our VPN worker, exposed as SOCKS5) can carry
-      // UDP; direct has no proxy in the way. For HTTP/HTTPS/SS upstreams QUIC
-      // can't work, so Wayfern disables it and uses TCP.
+      // Only two exits reliably carry UDP: no proxy at all (direct), and our
+      // own VPN worker, which is a loopback SOCKS5 backed by WireGuard. Any
+      // EXTERNAL proxy — HTTP/HTTPS/SS or SOCKS5 — can't be relied on for UDP
+      // ASSOCIATE, so the local worker refuses QUIC's UDP and Chromium then
+      // hard-fails QUIC-preferring sites (checkout.stripe.com, x.com payments)
+      // with ERR_SOCKS_CONNECTION_FAILED. Disable QUIC there so it uses TCP.
       let upstream_can_udp = match upstream_proxy.as_ref() {
         None => true,
-        Some(p) => matches!(p.proxy_type.as_str(), "socks5"),
+        Some(p) => {
+          p.proxy_type == "socks5"
+            && matches!(p.host.as_str(), "127.0.0.1" | "::1" | "localhost")
+        }
       };
 
       let wayfern_result = self

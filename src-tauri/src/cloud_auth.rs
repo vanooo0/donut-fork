@@ -785,12 +785,10 @@ impl CloudAuthManager {
   }
 
   /// Edit fingerprints / use a non-native OS fingerprint.
+  /// Personal AGPLv3 build: unlocked locally regardless of the cloud plan,
+  /// mirroring `can_use_browser_automation`. See fork README.
   pub async fn can_use_cross_os_fingerprints(&self) -> bool {
-    self
-      .entitlements()
-      .await
-      .map(|e| e.cross_os_fingerprints)
-      .unwrap_or(false)
+    true
   }
 
   /// Cloud profile sync / backup (async).

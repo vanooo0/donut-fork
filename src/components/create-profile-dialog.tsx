@@ -427,19 +427,24 @@ export function CreateProfileDialog({
         });
       }
 
+      // Only now, after a successful create, clear the form and close.
+      resetAllFields();
       handleClose();
     } catch (error) {
+      // Keep the dialog open with everything intact so the user can fix the
+      // config and press Create again. The upstream handler already showed a
+      // toast explaining what failed.
       console.error("Failed to create profile:", error);
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleClose = () => {
-    // Cancel any ongoing loading
-    loadingBrowserRef.current = null;
-
-    // Reset all states. Stay on the Wayfern config step.
+  // Wipe every field back to defaults. Called ONLY after a profile is
+  // actually created — not on close — so a failed create (or an accidental
+  // click outside) leaves the config intact for the user to fix and retry
+  // instead of forcing them to fill it all in again.
+  const resetAllFields = () => {
     setProfileName("");
     setCurrentStep("browser-config");
     setActiveTab("anti-detect");
@@ -450,9 +455,15 @@ export function CreateProfileDialog({
     setIsLoadingReleaseTypes(false);
     setReleaseTypesError(null);
     setWayfernConfig({
-      os: getCurrentOS(), // Reset to current OS
+      os: getCurrentOS(),
       randomize_fingerprint_on_launch: true,
     });
+  };
+
+  const handleClose = () => {
+    // Cancel any ongoing loading, then just close. The form state is left
+    // as-is so reopening keeps whatever was entered.
+    loadingBrowserRef.current = null;
     onClose();
   };
 

@@ -101,7 +101,6 @@ export function IntegrationsDialog({
   isOpen,
   onClose,
   subPage,
-  initialTab = "api",
 }: IntegrationsDialogProps) {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<AppSettings>({
@@ -321,13 +320,13 @@ export function IntegrationsDialog({
             subPage && "mx-auto w-full max-w-3xl",
           )}
         >
-          <AnimatedTabs key={initialTab} defaultValue={initialTab}>
+          {/* MCP is intentionally hidden in this build; the API tab stays so
+              the local API token remains reachable. Force the API tab so a
+              stored "mcp" initial tab can't select a hidden panel. */}
+          <AnimatedTabs key="api" defaultValue="api">
             <AnimatedTabsList>
               <AnimatedTabsTrigger value="api">
                 {t("integrations.tabApi")}
-              </AnimatedTabsTrigger>
-              <AnimatedTabsTrigger value="mcp">
-                {t("integrations.tabMcp")}
               </AnimatedTabsTrigger>
             </AnimatedTabsList>
 

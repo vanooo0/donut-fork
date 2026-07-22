@@ -107,7 +107,6 @@ import type {
   TrafficSnapshot,
   VpnConfig,
 } from "@/types";
-import { BandwidthMiniChart } from "./bandwidth-mini-chart";
 import {
   DataTableActionBar,
   DataTableActionBarAction,
@@ -1451,11 +1450,16 @@ export function ProfilesDataTable({
 
   const handleProxySelection = React.useCallback(
     async (profileId: string, proxyId: string | null) => {
+      // A running profile is pinned to the proxy it launched with, so
+      // switching its exit IP means a clean restart (leak-safe: no old+new
+      // IP live at once). The live command restarts it; the plain update is
+      // enough for a stopped profile.
+      const isRunning = runningProfiles.has(profileId);
       try {
-        await invoke("update_profile_proxy", {
-          profileId,
-          proxyId,
-        });
+        await invoke(
+          isRunning ? "change_profile_proxy_live" : "update_profile_proxy",
+          { profileId, proxyId },
+        );
         setProxyOverrides((prev) => ({ ...prev, [profileId]: proxyId }));
         setVpnOverrides((prev) => ({ ...prev, [profileId]: null }));
         await emit("profile-updated");
@@ -1465,7 +1469,7 @@ export function ProfilesDataTable({
         setOpenProxySelectorFor(null);
       }
     },
-    [],
+    [runningProfiles],
   );
 
   const handleVpnSelection = React.useCallback(
@@ -2673,12 +2677,11 @@ export function ProfilesDataTable({
           const profile = row.original;
           const isCrossOs = isCrossOsProfile(profile);
           const isCrossOsBlocked = isCrossOs;
-          const isRunning =
-            meta.isClient && meta.runningProfiles.has(profile.id);
           const isLaunching = meta.launchingProfiles.has(profile.id);
           const isStopping = meta.stoppingProfiles.has(profile.id);
-          const isDisabled =
-            isRunning || isLaunching || isStopping || isCrossOsBlocked;
+          // A plain running profile stays switchable (picking a proxy
+          // restarts it on the new IP); only mid-transition states block.
+          const isDisabled = isLaunching || isStopping || isCrossOsBlocked;
 
           const hasProxyOverride = Object.hasOwn(
             meta.proxyOverrides,
@@ -2710,28 +2713,10 @@ export function ProfilesDataTable({
           const isSelectorOpen = meta.openProxySelectorFor === profile.id;
           const selectedId = effectiveVpnId ?? effectiveProxyId ?? null;
 
-          // When profile is running, show bandwidth chart instead of proxy selector
-          if (isRunning && meta.trafficSnapshots) {
-            const snapshot = meta.trafficSnapshots[profile.id];
-            const bandwidthData = snapshot?.recent_bandwidth
-              ? [...snapshot.recent_bandwidth]
-              : [];
-            const currentBandwidth =
-              (snapshot?.current_bytes_sent ?? 0) +
-              (snapshot?.current_bytes_received ?? 0);
-
-            return (
-              <div className="min-w-0 overflow-hidden">
-                <BandwidthMiniChart
-                  key={`${profile.id}-${snapshot?.last_update ?? 0}-${bandwidthData.length}`}
-                  data={bandwidthData}
-                  currentBandwidth={currentBandwidth}
-                  onClick={() => meta.onOpenTrafficDialog?.(profile.id)}
-                />
-              </div>
-            );
-          }
-
+          // While running the proxy stays switchable: picking a new one
+          // restarts the profile on the new exit IP (handleProxySelection
+          // routes to the live command). Traffic charts live in the profile
+          // card, so the cell shows the proxy control in both states.
           return (
             <div className="flex min-w-0 items-center gap-2 overflow-hidden">
               <Popover

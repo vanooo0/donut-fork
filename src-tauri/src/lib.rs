@@ -290,6 +290,47 @@ async fn reset_traffic_budget() -> Result<crate::traffic_guard::TrafficBudgetSta
   Ok(crate::traffic_guard::budget_status())
 }
 
+/// Change the proxy of a profile, restarting the browser if it's running so
+/// the change takes effect. A running browser is pinned to the local proxy
+/// worker it launched with, so the only leak-safe way to switch exit IP is a
+/// clean restart: every connection then uses the new proxy, instead of old
+/// and new IPs being live at once (which would defeat the point of an
+/// antidetect profile). Tabs come back via --restore-last-session.
+#[tauri::command]
+async fn change_profile_proxy_live(
+  app_handle: tauri::AppHandle,
+  profile_id: String,
+  proxy_id: Option<String>,
+) -> Result<crate::profile::BrowserProfile, String> {
+  let profile_manager = profile::manager::ProfileManager::instance();
+
+  let profile = profile_manager
+    .list_profiles()
+    .map_err(|e| format!("Failed to list profiles: {e}"))?
+    .into_iter()
+    .find(|p| p.id.to_string() == profile_id)
+    .ok_or_else(|| serde_json::json!({ "code": "PROFILE_NOT_FOUND" }).to_string())?;
+
+  let was_running = profile
+    .process_id
+    .is_some_and(proxy_storage::is_process_running);
+
+  if was_running {
+    crate::browser_runner::kill_browser_profile(app_handle.clone(), profile.clone()).await?;
+  }
+
+  let updated = profile_manager
+    .update_profile_proxy(app_handle.clone(), &profile_id, proxy_id)
+    .await
+    .map_err(|e| format!("Failed to update profile proxy: {e}"))?;
+
+  if was_running {
+    crate::browser_runner::launch_browser_profile(app_handle, updated.clone(), None).await?;
+  }
+
+  Ok(updated)
+}
+
 /// Bundle every profile, proxy, VPN, group, extension and setting into one
 /// password-protected file. Runs on a blocking thread — a large profile set
 /// takes a while to zip and seal, and must not stall the UI.
@@ -2334,6 +2375,7 @@ pub fn run() {
       check_missing_geoip_database,
       ensure_all_binaries_exist,
       ensure_active_browsers_downloaded,
+      change_profile_proxy_live,
       export_backup_file,
       import_backup_file,
       get_traffic_budget,

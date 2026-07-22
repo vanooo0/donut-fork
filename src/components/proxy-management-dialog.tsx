@@ -581,6 +581,12 @@ export function ProxyManagementDialog({
               <span className="truncate font-medium select-text">
                 {proxy.name}
               </span>
+              <Badge
+                variant="outline"
+                className="shrink-0 px-1 py-0 text-[10px] uppercase leading-tight @2xl:hidden"
+              >
+                {proxy.proxy_settings.proxy_type}
+              </Badge>
             </div>
           );
         },

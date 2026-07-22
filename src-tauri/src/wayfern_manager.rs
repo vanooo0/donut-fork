@@ -805,6 +805,11 @@ impl WayfernManager {
       "--disable-updater".to_string(),
       "--disable-session-crashed-bubble".to_string(),
       "--hide-crash-restore-bubble".to_string(),
+      // Reopen the tabs from the previous run. Forced, so it restores even
+      // after Donut hard-kills the browser (which leaves a "crashed" exit
+      // type that would otherwise skip restore). Ephemeral profiles run from
+      // a wiped RAM dir, so they have nothing to restore — harmless there.
+      "--restore-last-session".to_string(),
       "--disable-infobars".to_string(),
       // Prefetch* / NoStatePrefetch: cross-site Speculation-Rules prefetch uses
       // an isolated NetworkContext that defaults to DIRECT egress (real host IP

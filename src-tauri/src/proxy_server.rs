@@ -619,8 +619,20 @@ async fn connect_via_socks(
         return Err(err_box("SOCKS5 upstream: bad version in connect reply"));
       }
       if head[1] != 0x00 {
+        // Decode the RFC1928 reply code so the log says WHY, not a raw byte.
+        let reason = match head[1] {
+          0x01 => "general SOCKS server failure",
+          0x02 => "connection not allowed by ruleset",
+          0x03 => "network unreachable",
+          0x04 => "host unreachable (upstream could not resolve/reach the site)",
+          0x05 => "connection refused by target",
+          0x06 => "TTL expired",
+          0x07 => "command not supported",
+          0x08 => "address type not supported",
+          _ => "unknown SOCKS error",
+        };
         return Err(err_box(format!(
-          "SOCKS5 upstream refused CONNECT (reply {:#04x})",
+          "SOCKS5 upstream refused CONNECT to {target_host}:{target_port}: {reason} (reply {:#04x})",
           head[1]
         )));
       }

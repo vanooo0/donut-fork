@@ -452,6 +452,27 @@ impl BrowserRunner {
         }
       };
 
+      // Proxy self-test: fetch an IP echo through the SAME local worker the
+      // browser will use, and log OK + exit IP or the exact failure reason.
+      // This makes a dead proxy / wrong login obvious from the log BEFORE any
+      // real (paid) site is opened, instead of a 20s stall with no clue.
+      if upstream_proxy.is_some() {
+        let test_port = local_proxy.port;
+        let profile_name = profile.name.clone();
+        let quic_state = if upstream_can_udp { "on" } else { "off" };
+        tauri::async_runtime::spawn(async move {
+          let local_url = format!("http://127.0.0.1:{test_port}");
+          match crate::ip_utils::fetch_public_ip(Some(&local_url)).await {
+            Ok(ip) => log::info!(
+              "[proxy-selftest] '{profile_name}': OK — browser proxy path works, exit IP {ip} (QUIC {quic_state})"
+            ),
+            Err(e) => log::warn!(
+              "[proxy-selftest] '{profile_name}': FAILED — {e}. The browser will not load sites through this proxy. Check the login/password and that the proxy is reachable."
+            ),
+          }
+        });
+      }
+
       let wayfern_result = self
         .wayfern_manager
         .launch_wayfern(

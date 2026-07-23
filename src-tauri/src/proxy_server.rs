@@ -568,9 +568,19 @@ async fn connect_via_socks(
           req.push(pb.len() as u8);
           req.extend_from_slice(pb);
           stream.write_all(&req).await?;
+          log::info!(
+            "[socks5-upstream] {socks_addr} sent RFC1929 login (ulen={}, plen={}), awaiting status",
+            ub.len(),
+            pb.len()
+          );
 
           let mut st = [0u8; 2];
           stream.read_exact(&mut st).await?;
+          log::info!(
+            "[socks5-upstream] {socks_addr} auth status ver={:#04x} code={:#04x}",
+            st[0],
+            st[1]
+          );
           if st[1] != 0x00 {
             return Err(err_box("SOCKS5 upstream rejected the username/password"));
           }
@@ -610,11 +620,20 @@ async fn connect_via_socks(
       }
       req.extend_from_slice(&target_port.to_be_bytes());
       stream.write_all(&req).await?;
+      log::info!(
+        "[socks5-upstream] {socks_addr} sent CONNECT to {target_host}:{target_port}, awaiting reply"
+      );
 
       // Reply: VER REP RSV ATYP BND.ADDR BND.PORT — consume the bound address
       // so the stream is left positioned exactly at the tunnel payload.
       let mut head = [0u8; 4];
       stream.read_exact(&mut head).await?;
+      log::info!(
+        "[socks5-upstream] {socks_addr} CONNECT reply ver={:#04x} code={:#04x} atyp={:#04x}",
+        head[0],
+        head[1],
+        head[3]
+      );
       if head[0] != 0x05 {
         return Err(err_box("SOCKS5 upstream: bad version in connect reply"));
       }

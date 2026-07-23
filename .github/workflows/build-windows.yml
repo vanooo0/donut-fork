@@ -44,6 +44,16 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - name: Give each build a unique, increasing version
+        shell: bash
+        run: |
+          # Every manual build otherwise ships as 0.28.2, so the NSIS installer
+          # sees "same version already installed" and won't overwrite the binary
+          # — a reinstall is a silent no-op. Bump the patch to the run number so
+          # each build is strictly newer and installs cleanly over the last one.
+          ver="0.28.${{ github.run_number }}"
+          node -e "const f='src-tauri/tauri.conf.json';const j=require('./'+f);j.version='$ver';require('fs').writeFileSync(f,JSON.stringify(j,null,2)+'\n');console.log('build version:',j.version)"
+
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
